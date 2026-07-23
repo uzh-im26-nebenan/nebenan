@@ -4,24 +4,24 @@
   --fade: #8a8272;
   --line: rgba(28, 25, 20, 0.1);
   --serif: "Cormorant Garamond", Georgia, serif;
-  --sans: "IBM Plex Sans", Helvetica, Arial, sans-serif;
 }
 
-*,
-*::before,
-*::after {
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-height: 100dvh;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.5;
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -51,44 +51,58 @@ body {
 .page {
   width: min(100%, 30rem);
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 4rem;
+  padding: 1.25rem max(1rem, env(safe-area-inset-right))
+    max(3.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 }
 
 .head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 3rem;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
 }
 
-.head a {
+.head a,
+#add,
+.item__remove {
   color: var(--fade);
-  font-size: 13px;
+  font: inherit;
+  font-size: 0.875rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
   text-decoration: none;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
 }
 
-.head a:hover {
+.head a:hover,
+#add:hover,
+.item__remove:hover {
   color: var(--ink);
 }
 
 .now {
   color: var(--fade);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 h1 {
   font-family: var(--serif);
   font-weight: 400;
   font-style: italic;
-  font-size: clamp(2.4rem, 9vw, 3.2rem);
+  font-size: clamp(2.25rem, 9vw, 3rem);
   line-height: 1;
   letter-spacing: -0.02em;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 
 .compose {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.25rem;
 }
 
 .compose textarea {
@@ -98,10 +112,10 @@ h1 {
   background: transparent;
   color: var(--ink);
   font-family: var(--serif);
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-style: italic;
   line-height: 1.4;
-  padding: 0.25rem 0 0.65rem;
+  padding: 0.35rem 0 0.65rem;
   resize: none;
   outline: none;
   border-radius: 0;
@@ -111,39 +125,28 @@ h1 {
   color: rgba(138, 130, 114, 0.65);
 }
 
-.compose__row {
+.row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 #count {
   color: var(--fade);
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 
 #add {
-  appearance: none;
-  border: 0;
-  background: none;
   color: var(--ink);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 0.18em;
-  padding: 0.5rem 0;
-}
-
-#add:hover {
-  opacity: 0.55;
 }
 
 .error {
   margin-top: 0.5rem;
   color: #9a4d3d;
-  font-size: 12.5px;
+  font-size: 0.8125rem;
 }
 
 .error[hidden],
@@ -156,60 +159,36 @@ h1 {
 }
 
 .item {
-  padding: 1.25rem 0;
+  padding: 1.15rem 0;
   border-top: 1px solid var(--line);
 }
 
 .item__when {
   display: block;
   color: var(--fade);
-  font-size: 11px;
-  margin-bottom: 0.45rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.4rem;
 }
 
 .item__text {
   font-family: var(--serif);
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-style: italic;
   line-height: 1.35;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
 .item__remove {
-  appearance: none;
-  border: 0;
-  background: none;
-  color: var(--fade);
-  font: inherit;
-  font-size: 11px;
-  margin-top: 0.6rem;
-  cursor: pointer;
-  padding: 0.4rem 0;
-  opacity: 0;
-  transition: opacity 0.2s ease, color 0.2s ease;
-}
-
-.item:hover .item__remove,
-.item:focus-within .item__remove {
-  opacity: 1;
-}
-
-.item__remove:hover {
-  color: var(--ink);
-}
-
-@media (hover: none) {
-  .item__remove {
-    opacity: 0.65;
-  }
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
 }
 
 .empty {
   border-top: 1px solid var(--line);
-  padding-top: 1.25rem;
+  padding-top: 1.15rem;
   color: var(--fade);
   font-family: var(--serif);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
