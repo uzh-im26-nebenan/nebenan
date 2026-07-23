@@ -46,48 +46,36 @@
       .slice(0, MAX);
   }
 
-  function formatNow(date) {
-    const day = new Intl.DateTimeFormat(undefined, {
+  function tickClock() {
+    const now = new Date();
+    nowEl.dateTime = now.toISOString();
+    nowEl.textContent = new Intl.DateTimeFormat(undefined, {
       weekday: "short",
       day: "numeric",
       month: "short",
-    }).format(date);
-    const time = new Intl.DateTimeFormat(undefined, {
       hour: "numeric",
       minute: "2-digit",
-    }).format(date);
-    return `${day} · ${time}`;
+    })
+      .format(now)
+      .replace(",", " ·");
   }
 
   function formatWhen(iso) {
     try {
-      const date = new Date(iso);
       return new Intl.DateTimeFormat(undefined, {
         day: "numeric",
         month: "short",
-        year: "numeric",
         hour: "numeric",
         minute: "2-digit",
-      }).format(date);
+      }).format(new Date(iso));
     } catch {
       return "";
     }
   }
 
-  function tickClock() {
-    const now = new Date();
-    nowEl.dateTime = now.toISOString();
-    nowEl.textContent = formatNow(now);
-  }
-
   function showError(msg) {
-    if (!msg) {
-      errorEl.hidden = true;
-      errorEl.textContent = "";
-      return;
-    }
-    errorEl.hidden = false;
-    errorEl.textContent = msg;
+    errorEl.hidden = !msg;
+    errorEl.textContent = msg || "";
   }
 
   function updateCount() {

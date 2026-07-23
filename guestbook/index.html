@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=IBM+Plex+Sans:wght@400&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="guestbook.css" />
@@ -26,10 +26,7 @@
       </header>
 
       <main>
-        <section class="intro">
-          <p class="intro__kicker">guestbook</p>
-          <h1>Leave a line.</h1>
-        </section>
+        <h1>Leave a line.</h1>
 
         <section class="compose" aria-label="Write a note">
           <label class="sr-only" for="note">Your note</label>
@@ -40,13 +37,13 @@
             placeholder="One quiet sentence…"
           ></textarea>
           <div class="compose__row">
-            <span class="compose__count" id="count" aria-live="polite">160</span>
+            <span id="count">160</span>
             <button type="button" id="add">Add</button>
           </div>
-          <p class="compose__error" id="error" hidden></p>
+          <p class="error" id="error" hidden></p>
         </section>
 
-        <section class="book" aria-label="Notes">
+        <section aria-label="Notes">
           <ol class="list" id="list"></ol>
           <p class="empty" id="empty">Still empty.</p>
         </section>
