@@ -1,55 +1,51 @@
 (() => {
-  const STORAGE = "jorjis.guestbook.world.v1";
-  const MIN_Z = 0.25;
-  const MAX_Z = 3;
-  const GRID = 48;
+  const STORAGE = "jorjis.guestbook.notes.v3";
+  const NOTE_MS = 2000;
+  const MIN_Z = 0.35;
+  const MAX_Z = 2.5;
+  const PAPER = 20000; // virtual world extent for infinite feel
 
   const stage = document.getElementById("stage");
-  const canvas = document.getElementById("paper");
-  const worldEl = document.getElementById("world");
-  const toastEl = document.getElementById("toast");
+  const paper = document.getElementById("paper");
+  const world = document.getElementById("world");
+  const progress = document.getElementById("progress");
+  const progressBar = document.getElementById("progress-bar");
   const playBtn = document.getElementById("play");
-  const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+  const toastEl = document.getElementById("toast");
 
   const state = {
-    x: 0,
-    y: 0,
+    x: innerWidth / 2,
+    y: innerHeight / 2,
     z: 1,
-    strokes: [],
     notes: [],
   };
 
-  let dpr = 1;
-  let w = 0;
-  let h = 0;
-  let spaceDown = false;
   let panning = false;
-  let drawing = false;
-  let panOrigin = null;
-  let viewOrigin = null;
-  let currentStroke = null;
-  let raf = 0;
-  let needsPaint = true;
-  let saveTimer = 0;
-  let playIndex = -1;
-  let playing = false;
-  let toastTimer = 0;
+  let panStart = null;
+  let viewStart = null;
+  let moved = false;
   let pointers = new Map();
-  let pinchStart = null;
+  let pinch = null;
+  let saveTimer = 0;
+  let toastTimer = 0;
 
-  /* ---------- persistence ---------- */
+  let playing = false;
+  let paused = false;
+  let playIndex = -1;
+  let playStarted = 0;
+  let playElapsed = 0;
+  let rafPlay = 0;
 
   function load() {
     try {
       const raw = localStorage.getItem(STORAGE);
       if (!raw) return;
       const data = JSON.parse(raw);
-      if (Array.isArray(data.strokes)) state.strokes = data.strokes;
       if (Array.isArray(data.notes)) state.notes = data.notes;
       if (data.view) {
-        state.x = data.view.x || 0;
-        state.y = data.view.y || 0;
-        state.z = data.view.z || 1;
+        state.x = data.view.x ?? state.x;
+        state.y = data.view.y ?? state.y;
+        state.z = data.view.z ?? 1;
       }
     } catch {
       /* ignore */
@@ -62,8 +58,7 @@
         STORAGE,
         JSON.stringify({
           view: { x: state.x, y: state.y, z: state.z },
-          strokes: state.strokes.slice(-200),
-          notes: state.notes.slice(-60),
+          notes: state.notes.slice(-80),
         })
       );
     } catch {
@@ -73,10 +68,12 @@
 
   function queueSave() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 220);
+    saveTimer = setTimeout(save, 200);
   }
 
-  /* ---------- coords ---------- */
+  function clampZ(z) {
+    return Math.min(MAX_Z, Math.max(MIN_Z, z));
+  }
 
   function screenToWorld(sx, sy) {
     return {
@@ -85,102 +82,13 @@
     };
   }
 
-  function clampZoom(z) {
-    return Math.min(MAX_Z, Math.max(MIN_Z, z));
+  function applyTransform() {
+    const t = `translate(${state.x}px, ${state.y}px) scale(${state.z})`;
+    world.style.transform = t;
+    paper.style.transform = `${t} translate(${-PAPER / 2}px, ${-PAPER / 2}px)`;
+    paper.style.width = PAPER + "px";
+    paper.style.height = PAPER + "px";
   }
-
-  /* ---------- render ---------- */
-
-  function resize() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    w = innerWidth;
-    h = innerHeight;
-    canvas.width = (w * dpr) | 0;
-    canvas.height = (h * dpr) | 0;
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    needsPaint = true;
-  }
-
-  function applyWorldTransform() {
-    worldEl.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.z})`;
-  }
-
-  function paint() {
-    raf = 0;
-    if (!needsPaint) return;
-    needsPaint = false;
-
-    ctx.save();
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#fff9e6";
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.translate(state.x, state.y);
-    ctx.scale(state.z, state.z);
-
-    // soft infinite grid
-    const left = (-state.x) / state.z;
-    const top = (-state.y) / state.z;
-    const right = left + w / state.z;
-    const bottom = top + h / state.z;
-    const startX = Math.floor(left / GRID) * GRID;
-    const startY = Math.floor(top / GRID) * GRID;
-
-    ctx.strokeStyle = "rgba(60, 50, 20, 0.06)";
-    ctx.lineWidth = 1 / state.z;
-    ctx.beginPath();
-    for (let x = startX; x <= right; x += GRID) {
-      ctx.moveTo(x, top);
-      ctx.lineTo(x, bottom);
-    }
-    for (let y = startY; y <= bottom; y += GRID) {
-      ctx.moveTo(left, y);
-      ctx.lineTo(right, y);
-    }
-    ctx.stroke();
-
-    // strokes
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.strokeStyle = "#1f1c16";
-
-    for (const stroke of state.strokes) {
-      if (!stroke.points || stroke.points.length < 2) continue;
-      ctx.lineWidth = (stroke.width || 2.6) / state.z;
-      ctx.beginPath();
-      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-      for (let i = 1; i < stroke.points.length - 1; i++) {
-        const p = stroke.points[i];
-        const n = stroke.points[i + 1];
-        ctx.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2);
-      }
-      const last = stroke.points[stroke.points.length - 1];
-      ctx.lineTo(last.x, last.y);
-      ctx.stroke();
-    }
-
-    if (currentStroke && currentStroke.points.length) {
-      ctx.lineWidth = (currentStroke.width || 2.6) / state.z;
-      ctx.beginPath();
-      ctx.moveTo(currentStroke.points[0].x, currentStroke.points[0].y);
-      for (let i = 1; i < currentStroke.points.length; i++) {
-        ctx.lineTo(currentStroke.points[i].x, currentStroke.points[i].y);
-      }
-      ctx.stroke();
-    }
-
-    ctx.restore();
-    applyWorldTransform();
-  }
-
-  function requestPaint() {
-    needsPaint = true;
-    if (!raf) raf = requestAnimationFrame(paint);
-  }
-
-  /* ---------- notes ---------- */
 
   function escapeHtml(value) {
     return String(value)
@@ -191,12 +99,11 @@
   }
 
   function renderNotes() {
-    worldEl.innerHTML = state.notes
+    world.innerHTML = state.notes
       .map(
         (note) => `
       <article class="note" data-id="${escapeHtml(note.id)}" style="left:${note.x}px;top:${note.y}px">
         <div class="note__head">
-          <button type="button" class="note__play" data-play="${escapeHtml(note.id)}" aria-label="Play note">▶</button>
           <button type="button" class="note__x" data-del="${escapeHtml(note.id)}" aria-label="Remove">✕</button>
         </div>
         <textarea class="note__body" data-id="${escapeHtml(note.id)}" rows="3" placeholder="A line…">${escapeHtml(note.text || "")}</textarea>
@@ -205,86 +112,35 @@
       .join("");
   }
 
-  function createNote(worldX, worldY) {
+  function createNote(x, y) {
     const note = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      x: worldX,
-      y: worldY,
+      x,
+      y,
       text: "",
     };
     state.notes.push(note);
     renderNotes();
     queueSave();
-    const el = worldEl.querySelector(`textarea[data-id="${note.id}"]`);
+    const el = world.querySelector(`textarea[data-id="${note.id}"]`);
     if (el) el.focus();
   }
 
   function focusNote(id) {
-    worldEl.querySelectorAll(".note").forEach((n) => {
-      n.classList.toggle("is-active", n.dataset.id === id);
+    world.querySelectorAll(".note").forEach((el) => {
+      el.classList.toggle("is-active", el.dataset.id === id);
     });
+  }
+
+  function clearFocus() {
+    world.querySelectorAll(".note").forEach((el) => el.classList.remove("is-active"));
   }
 
   function panToNote(note) {
-    const zx = state.z;
-    state.x = w / 2 - (note.x + 140) * zx;
-    state.y = h / 2 - (note.y + 60) * zx;
-    requestPaint();
-  }
-
-  function speak(text, onend) {
-    if (!window.speechSynthesis) {
-      onend && onend();
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text || "Empty note.");
-    u.rate = 0.95;
-    u.onend = () => onend && onend();
-    u.onerror = () => onend && onend();
-    window.speechSynthesis.speak(u);
-  }
-
-  function playOne(id) {
-    const note = state.notes.find((n) => n.id === id);
-    if (!note) return;
-    focusNote(note.id);
-    panToNote(note);
-    speak(note.text);
-  }
-
-  function playNext() {
-    if (!state.notes.length) {
-      showToast("No notes yet. Double-click to leave one.");
-      stopPlay();
-      return;
-    }
-
-    playing = true;
-    playBtn.classList.add("is-playing");
-    playBtn.textContent = "■";
-    playIndex = (playIndex + 1) % state.notes.length;
-    const note = state.notes[playIndex];
-    focusNote(note.id);
-    panToNote(note);
-    speak(note.text, () => {
-      if (!playing) return;
-      if (playIndex >= state.notes.length - 1) {
-        stopPlay();
-        showToast("That’s all for now.");
-        return;
-      }
-      setTimeout(playNext, 350);
-    });
-  }
-
-  function stopPlay() {
-    playing = false;
-    playIndex = -1;
-    playBtn.classList.remove("is-playing");
-    playBtn.textContent = "▶";
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    worldEl.querySelectorAll(".note").forEach((n) => n.classList.remove("is-active"));
+    state.x = innerWidth / 2 - (note.x + 120) * state.z;
+    state.y = innerHeight / 2 - (note.y + 50) * state.z;
+    applyTransform();
+    queueSave();
   }
 
   function showToast(msg) {
@@ -293,41 +149,132 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       toastEl.hidden = true;
-    }, 2200);
+    }, 2000);
   }
 
-  /* ---------- camera ---------- */
+  /* -------- play / pause highlight -------- */
+
+  function setPlayUi() {
+    if (!playing) {
+      playBtn.textContent = "▶";
+      playBtn.classList.remove("is-playing");
+      playBtn.setAttribute("aria-label", "Play notes");
+      progress.hidden = true;
+      progressBar.style.width = "0%";
+      return;
+    }
+    playBtn.classList.add("is-playing");
+    playBtn.textContent = paused ? "▶" : "❚❚";
+    playBtn.setAttribute("aria-label", paused ? "Resume" : "Pause");
+    progress.hidden = false;
+  }
+
+  function stopPlay() {
+    playing = false;
+    paused = false;
+    playIndex = -1;
+    playElapsed = 0;
+    if (rafPlay) cancelAnimationFrame(rafPlay);
+    rafPlay = 0;
+    clearFocus();
+    setPlayUi();
+  }
+
+  function startNote(index) {
+    if (!state.notes.length) {
+      stopPlay();
+      showToast("No notes yet.");
+      return;
+    }
+    playIndex = index;
+    playElapsed = 0;
+    playStarted = performance.now();
+    const note = state.notes[playIndex];
+    focusNote(note.id);
+    panToNote(note);
+    setPlayUi();
+    if (!rafPlay) rafPlay = requestAnimationFrame(tickPlay);
+  }
+
+  function tickPlay(now) {
+    rafPlay = 0;
+    if (!playing || paused) return;
+
+    playElapsed = now - playStarted;
+    const t = Math.min(1, playElapsed / NOTE_MS);
+    progressBar.style.width = `${(1 - t) * 100}%`;
+
+    if (playElapsed >= NOTE_MS) {
+      if (playIndex >= state.notes.length - 1) {
+        stopPlay();
+        showToast("End of notes.");
+        return;
+      }
+      startNote(playIndex + 1);
+      return;
+    }
+
+    rafPlay = requestAnimationFrame(tickPlay);
+  }
+
+  function togglePlay() {
+    if (!state.notes.length) {
+      showToast("Double-click the page to leave a note.");
+      return;
+    }
+
+    if (!playing) {
+      playing = true;
+      paused = false;
+      startNote(0);
+      return;
+    }
+
+    if (paused) {
+      paused = false;
+      playStarted = performance.now() - playElapsed;
+      setPlayUi();
+      rafPlay = requestAnimationFrame(tickPlay);
+      return;
+    }
+
+    paused = true;
+    playElapsed = performance.now() - playStarted;
+    if (rafPlay) cancelAnimationFrame(rafPlay);
+    rafPlay = 0;
+    setPlayUi();
+  }
+
+  /* -------- camera -------- */
 
   function zoomAt(sx, sy, factor) {
     const before = screenToWorld(sx, sy);
-    state.z = clampZoom(state.z * factor);
+    state.z = clampZ(state.z * factor);
     state.x = sx - before.x * state.z;
     state.y = sy - before.y * state.z;
-    requestPaint();
+    applyTransform();
     queueSave();
   }
 
   function resetView() {
-    state.x = 0;
-    state.y = 0;
+    state.x = innerWidth / 2;
+    state.y = innerHeight / 2;
     state.z = 1;
-    requestPaint();
+    applyTransform();
     queueSave();
   }
 
-  /* ---------- pointer ---------- */
+  /* -------- pan only (no draw) -------- */
 
   function onPointerDown(e) {
-    if (e.target.closest(".note, .map, .top")) return;
+    if (e.target.closest(".note, .map, .top, .progress")) return;
 
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     if (pointers.size === 2) {
-      drawing = false;
-      currentStroke = null;
       const [a, b] = [...pointers.values()];
-      pinchStart = {
-        dist: Math.hypot(a.x - b.x, a.y - b.y),
+      pinch = {
+        dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
         z: state.z,
         midX: (a.x + b.x) / 2,
         midY: (a.y + b.y) / 2,
@@ -338,22 +285,12 @@
       return;
     }
 
-    if (e.button === 2 || e.button === 1 || spaceDown) {
-      panning = true;
-      stage.classList.add("is-panning");
-      panOrigin = { x: e.clientX, y: e.clientY };
-      viewOrigin = { x: state.x, y: state.y };
-      stage.setPointerCapture(e.pointerId);
-      return;
-    }
-    if (e.button !== 0) return;
-
-    drawing = true;
-    stage.classList.add("is-drawing");
-    const p = screenToWorld(e.clientX, e.clientY);
-    currentStroke = { width: 2.6, points: [p] };
+    panning = true;
+    moved = false;
+    stage.classList.add("is-panning");
+    panStart = { x: e.clientX, y: e.clientY };
+    viewStart = { x: state.x, y: state.y };
     stage.setPointerCapture(e.pointerId);
-    requestPaint();
   }
 
   function onPointerMove(e) {
@@ -361,70 +298,58 @@
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     }
 
-    if (pointers.size === 2 && pinchStart) {
+    if (pointers.size === 2 && pinch) {
       const [a, b] = [...pointers.values()];
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
       const midX = (a.x + b.x) / 2;
       const midY = (a.y + b.y) / 2;
-      const factor = dist / Math.max(pinchStart.dist, 1);
       const world = {
-        x: (pinchStart.midX - pinchStart.viewX) / pinchStart.z,
-        y: (pinchStart.midY - pinchStart.viewY) / pinchStart.z,
+        x: (pinch.midX - pinch.viewX) / pinch.z,
+        y: (pinch.midY - pinch.viewY) / pinch.z,
       };
-      state.z = clampZoom(pinchStart.z * factor);
+      state.z = clampZ(pinch.z * (dist / pinch.dist));
       state.x = midX - world.x * state.z;
       state.y = midY - world.y * state.z;
-      requestPaint();
+      applyTransform();
       return;
     }
 
-    if (panning && panOrigin) {
-      state.x = viewOrigin.x + (e.clientX - panOrigin.x);
-      state.y = viewOrigin.y + (e.clientY - panOrigin.y);
-      requestPaint();
-      return;
-    }
-    if (!drawing || !currentStroke) return;
-    const p = screenToWorld(e.clientX, e.clientY);
-    const last = currentStroke.points[currentStroke.points.length - 1];
-    const dx = p.x - last.x;
-    const dy = p.y - last.y;
-    if (dx * dx + dy * dy < 0.8) return;
-    currentStroke.points.push(p);
-    requestPaint();
+    if (!panning || !panStart) return;
+    const dx = e.clientX - panStart.x;
+    const dy = e.clientY - panStart.y;
+    if (dx * dx + dy * dy > 9) moved = true;
+    state.x = viewStart.x + dx;
+    state.y = viewStart.y + dy;
+    applyTransform();
   }
 
   function onPointerUp(e) {
     pointers.delete(e.pointerId);
-    if (pointers.size < 2) pinchStart = null;
+    if (pointers.size < 2) pinch = null;
 
-    if (panning) {
-      panning = false;
-      panOrigin = null;
-      stage.classList.remove("is-panning");
-      queueSave();
-      try {
-        stage.releasePointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    if (!drawing) return;
-    drawing = false;
-    stage.classList.remove("is-drawing");
-    if (currentStroke && currentStroke.points.length > 1) {
-      state.strokes.push(currentStroke);
-      if (state.strokes.length > 200) state.strokes.shift();
-      queueSave();
-    }
-    currentStroke = null;
-    requestPaint();
+    if (!panning) return;
+    panning = false;
+    stage.classList.remove("is-panning");
+    panStart = null;
+    if (moved) queueSave();
     try {
       stage.releasePointerCapture(e.pointerId);
     } catch {
       /* ignore */
     }
+  }
+
+  function onWheel(e) {
+    e.preventDefault();
+    // trackpad scroll = pan; ctrl/meta+scroll or pinch = zoom
+    if (e.ctrlKey || e.metaKey) {
+      zoomAt(e.clientX, e.clientY, e.deltaY > 0 ? 0.92 : 1.08);
+      return;
+    }
+    state.x -= e.deltaX;
+    state.y -= e.deltaY;
+    applyTransform();
+    queueSave();
   }
 
   function onDblClick(e) {
@@ -433,24 +358,15 @@
     createNote(p.x, p.y);
   }
 
-  function onWheel(e) {
-    e.preventDefault();
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    zoomAt(e.clientX, e.clientY, factor);
-  }
-
-  /* ---------- events ---------- */
-
   stage.addEventListener("pointerdown", onPointerDown);
   stage.addEventListener("pointermove", onPointerMove);
   stage.addEventListener("pointerup", onPointerUp);
   stage.addEventListener("pointercancel", onPointerUp);
-  stage.addEventListener("dblclick", onDblClick);
   stage.addEventListener("wheel", onWheel, { passive: false });
-  stage.addEventListener("contextmenu", (e) => e.preventDefault());
+  stage.addEventListener("dblclick", onDblClick);
 
-  worldEl.addEventListener("pointerdown", (e) => e.stopPropagation());
-  worldEl.addEventListener("input", (e) => {
+  world.addEventListener("pointerdown", (e) => e.stopPropagation());
+  world.addEventListener("input", (e) => {
     const area = e.target.closest(".note__body");
     if (!area) return;
     const note = state.notes.find((n) => n.id === area.dataset.id);
@@ -458,56 +374,27 @@
     note.text = area.value.slice(0, 280);
     queueSave();
   });
-
-  worldEl.addEventListener("click", (e) => {
-    const play = e.target.closest("[data-play]");
-    if (play) {
-      stopPlay();
-      playOne(play.dataset.play);
-      return;
-    }
+  world.addEventListener("click", (e) => {
     const del = e.target.closest("[data-del]");
-    if (del) {
-      state.notes = state.notes.filter((n) => n.id !== del.dataset.del);
-      renderNotes();
-      queueSave();
-    }
+    if (!del) return;
+    state.notes = state.notes.filter((n) => n.id !== del.dataset.del);
+    if (playing) stopPlay();
+    renderNotes();
+    queueSave();
   });
 
   document.getElementById("zoom-in").addEventListener("click", () => {
-    zoomAt(w / 2, h / 2, 1.2);
+    zoomAt(innerWidth / 2, innerHeight / 2, 1.15);
   });
   document.getElementById("zoom-out").addEventListener("click", () => {
-    zoomAt(w / 2, h / 2, 1 / 1.2);
+    zoomAt(innerWidth / 2, innerHeight / 2, 1 / 1.15);
   });
   document.getElementById("zoom-reset").addEventListener("click", resetView);
+  playBtn.addEventListener("click", togglePlay);
 
-  playBtn.addEventListener("click", () => {
-    if (playing) stopPlay();
-    else playNext();
-  });
-
-  addEventListener("keydown", (e) => {
-    if (e.code === "Space" && !e.target.closest("textarea, [contenteditable]")) {
-      e.preventDefault();
-      spaceDown = true;
-      stage.style.cursor = "grab";
-    }
-  });
-  addEventListener("keyup", (e) => {
-    if (e.code === "Space") {
-      spaceDown = false;
-      stage.style.cursor = "";
-    }
-  });
-
-  addEventListener("resize", () => {
-    resize();
-    requestPaint();
-  });
+  addEventListener("resize", applyTransform);
 
   load();
-  resize();
   renderNotes();
-  requestPaint();
+  applyTransform();
 })();

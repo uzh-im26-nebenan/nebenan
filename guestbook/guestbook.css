@@ -2,8 +2,9 @@
   --paper: #fff9e6;
   --ink: #1f1c16;
   --fade: #9a917c;
-  --line: rgba(31, 28, 22, 0.08);
-  --accent: #1f1c16;
+  --line: rgba(31, 28, 22, 0.1);
+  --yellow: #ffe566;
+  --yellow-deep: #f5d000;
 }
 
 *,
@@ -34,6 +35,28 @@ body {
   background: var(--paper);
 }
 
+.progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  height: 3px;
+  background: rgba(31, 28, 22, 0.06);
+}
+
+.progress[hidden] {
+  display: none;
+}
+
+.progress__bar {
+  height: 100%;
+  width: 0%;
+  background: var(--yellow-deep);
+  transform-origin: left center;
+  will-change: width;
+}
+
 .top {
   position: absolute;
   top: 0;
@@ -44,7 +67,7 @@ body {
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.25rem;
   pointer-events: none;
 }
 
@@ -62,8 +85,6 @@ body {
 .top__hint {
   color: var(--fade);
   font-size: 12px;
-  letter-spacing: 0.01em;
-  opacity: 0.85;
 }
 
 @media (max-width: 720px) {
@@ -77,23 +98,24 @@ body {
   inset: 0;
   overflow: hidden;
   cursor: grab;
+  touch-action: none;
 }
 
 .stage.is-panning {
   cursor: grabbing;
 }
 
-.stage.is-drawing {
-  cursor: crosshair;
-}
-
-#paper {
+.paper {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  touch-action: none;
+  inset: -50vmax;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(60, 50, 20, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(60, 50, 20, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform-origin: 0 0;
+  will-change: transform;
+  pointer-events: none;
 }
 
 .world {
@@ -106,43 +128,28 @@ body {
 
 .note {
   position: absolute;
-  min-width: 10rem;
+  min-width: 11rem;
   max-width: 18rem;
-  padding: 0.85rem 0.95rem 0.9rem;
-  background: rgba(255, 252, 240, 0.92);
-  border: 1px solid var(--line);
-  box-shadow: 0 10px 30px rgba(31, 28, 22, 0.06);
+  padding: 0.9rem 1rem 1rem;
+  background: rgba(255, 252, 240, 0.96);
+  border: 1.5px solid transparent;
+  box-shadow: 0 10px 28px rgba(31, 28, 22, 0.06);
   pointer-events: auto;
-  cursor: auto;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .note.is-active {
-  border-color: rgba(31, 28, 22, 0.28);
-  box-shadow: 0 14px 40px rgba(31, 28, 22, 0.12);
+  border-color: var(--yellow-deep);
+  box-shadow:
+    0 0 0 1px var(--yellow),
+    0 16px 40px rgba(31, 28, 22, 0.1);
 }
 
 .note__head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.35rem;
-}
-
-.note__play {
-  appearance: none;
-  border: 0;
-  background: none;
-  color: var(--fade);
-  font-size: 11px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0.15rem;
-}
-
-.note__play:hover,
-.note.is-active .note__play {
-  color: var(--ink);
+  justify-content: flex-end;
+  margin-bottom: 0.25rem;
+  min-height: 0.9rem;
 }
 
 .note__x {
@@ -152,7 +159,7 @@ body {
   color: var(--fade);
   font-size: 11px;
   cursor: pointer;
-  padding: 0.15rem;
+  padding: 0.1rem;
   opacity: 0;
 }
 
@@ -171,8 +178,7 @@ body {
   line-height: 1.55;
   resize: none;
   outline: none;
-  min-height: 2.6rem;
-  field-sizing: content;
+  min-height: 2.8rem;
 }
 
 .note__body::placeholder {
@@ -193,7 +199,7 @@ body {
   width: 2.4rem;
   height: 2.4rem;
   border: 1px solid var(--line);
-  background: rgba(255, 249, 230, 0.92);
+  background: rgba(255, 249, 230, 0.94);
   color: var(--ink);
   font-size: 1rem;
   line-height: 1;
@@ -206,15 +212,15 @@ body {
   background: #fff;
 }
 
-.map #play {
+.map__play {
   margin-top: 0.35rem;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
-.map #play.is-playing {
-  color: #fff;
+.map__play.is-playing {
   background: var(--ink);
   border-color: var(--ink);
+  color: var(--paper);
 }
 
 .toast {
@@ -225,9 +231,8 @@ body {
   transform: translateX(-50%);
   padding: 0.55rem 0.85rem;
   background: rgba(31, 28, 22, 0.9);
-  color: #fff9e6;
+  color: var(--paper);
   font-size: 12.5px;
-  letter-spacing: 0.01em;
   pointer-events: none;
 }
 
@@ -237,6 +242,6 @@ body {
 
 @media (hover: none) {
   .note__x {
-    opacity: 0.7;
+    opacity: 0.65;
   }
 }

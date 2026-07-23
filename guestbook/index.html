@@ -7,26 +7,36 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <meta name="description" content="An open page without edges." />
+    <meta name="description" content="An open page of notes." />
     <link rel="stylesheet" href="guestbook.css" />
   </head>
   <body>
     <div class="app" id="app">
+      <div class="progress" id="progress" hidden>
+        <div class="progress__bar" id="progress-bar"></div>
+      </div>
+
       <header class="top">
         <a href="../">home</a>
-        <p class="top__hint">draw freely · space+drag to pan · scroll to zoom · double-click for a note</p>
+        <p class="top__hint">scroll or drag to move · double-click to leave a note</p>
       </header>
 
       <div class="stage" id="stage">
-        <canvas id="paper" aria-label="Infinite guestbook"></canvas>
+        <div class="paper" id="paper" aria-hidden="true"></div>
         <div class="world" id="world"></div>
       </div>
 
-      <aside class="map" aria-label="Map controls">
+      <aside class="map" aria-label="Controls">
         <button type="button" id="zoom-in" title="Zoom in">+</button>
         <button type="button" id="zoom-out" title="Zoom out">−</button>
         <button type="button" id="zoom-reset" title="Reset view">◎</button>
-        <button type="button" id="play" title="Play notes" aria-label="Play notes">
+        <button
+          type="button"
+          id="play"
+          class="map__play"
+          title="Play notes"
+          aria-label="Play notes"
+        >
           ▶
         </button>
       </aside>
