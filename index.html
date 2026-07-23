@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jorjis hasan</title>
+    <meta
+      name="description"
+      content="Jorjis Hasan — full-stack engineer. A private directory of work, craft, and correspondence."
+    />
+    <meta property="og:title" content="jorjis hasan" />
+    <meta
+      property="og:description"
+      content="Full-stack engineer. A private directory of work, craft, and correspondence."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="wash" aria-hidden="true"></div>
+
+    <header class="menubar">
+      <div class="menubar__brand">jorjis.hasan</div>
+      <nav class="menubar__nav" aria-label="System">
+        <button type="button" data-cmd="about">File</button>
+        <button type="button" data-cmd="work">Edit</button>
+        <button type="button" data-cmd="craft">View</button>
+        <button type="button" data-cmd="contact">Special</button>
+      </nav>
+      <div class="menubar__meta">
+        <span id="clock"></span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero" aria-label="Identity">
+        <p class="hero__sigil">// personal archive · est. 2019</p>
+        <h1 class="hero__name">jorjis hasan</h1>
+        <p class="hero__line">
+          full-stack engineer · builder of products people return to
+        </p>
+      </section>
+
+      <section class="fs" aria-label="Directory">
+        <div class="fs__prompt">
+          <span class="fs__cwd">~/jorjis_hasan</span>
+          <span class="fs__blink" aria-hidden="true"></span>
+        </div>
+        <pre class="tree" id="tree" tabindex="0"></pre>
+      </section>
+    </main>
+
+    <aside class="viewer" id="viewer" hidden>
+      <div class="viewer__frame" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+        <header class="viewer__bar">
+          <div class="viewer__traffic" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <h2 class="viewer__title" id="viewer-title"></h2>
+          <button type="button" class="viewer__close" id="viewer-close" aria-label="Close">
+            esc
+          </button>
+        </header>
+        <div class="viewer__body">
+          <pre class="viewer__text" id="viewer-body"></pre>
+        </div>
+      </div>
+    </aside>
+
+    <footer class="status">
+      <span>ready</span>
+      <span class="status__sep">·</span>
+      <span id="status-path">select a file</span>
+      <span class="status__sep">·</span>
+      <span>mono · 12pt</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
