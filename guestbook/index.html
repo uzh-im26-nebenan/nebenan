@@ -3,27 +3,56 @@
   <head>
     <meta charset="utf-8" />
     <title>Guestbook — Jorjis Hasan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
+      name="description"
+      content="A private guestbook. Notes stay on your device."
     />
-    <meta name="description" content="Leave a mark in ink." />
     <link rel="stylesheet" href="guestbook.css" />
   </head>
   <body>
-    <div class="app">
-      <header class="bar">
+    <a class="skip" href="#compose">Skip to write a note</a>
+
+    <div class="page">
+      <header class="head">
         <a href="../">home</a>
-        <p class="bar__hint">draw to leave a mark · scroll to move</p>
+        <p class="head__mark">guestbook</p>
       </header>
 
-      <canvas id="page" aria-label="Ink guestbook"></canvas>
+      <main>
+        <section class="intro" aria-labelledby="title">
+          <h1 id="title">Leave a line.</h1>
+          <p>
+            Short notes only. They stay on this device — nothing is published
+            for strangers to see.
+          </p>
+        </section>
 
-      <aside class="zoom" aria-label="Zoom">
-        <button type="button" id="zoom-in">+</button>
-        <button type="button" id="zoom-out">−</button>
-      </aside>
+        <section class="compose" aria-label="Write a note">
+          <label class="sr-only" for="note">Your note</label>
+          <textarea
+            id="note"
+            rows="3"
+            maxlength="160"
+            placeholder="One quiet sentence…"
+          ></textarea>
+          <div class="compose__row">
+            <p class="compose__count" aria-live="polite">
+              <span id="count">160</span> left
+            </p>
+            <button type="button" id="add">Add note</button>
+          </div>
+          <p class="compose__error" id="error" hidden></p>
+        </section>
+
+        <section class="book" aria-labelledby="notes-title">
+          <h2 id="notes-title" class="sr-only">Notes on this device</h2>
+          <ol class="list" id="list"></ol>
+          <p class="empty" id="empty">Still empty. Be the first line.</p>
+        </section>
+      </main>
     </div>
+
     <script src="guestbook.js"></script>
   </body>
 </html>
