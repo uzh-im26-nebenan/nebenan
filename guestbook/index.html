@@ -8,47 +8,47 @@
       name="description"
       content="A private guestbook. Notes stay on your device."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="guestbook.css" />
   </head>
   <body>
-    <a class="skip" href="#compose">Skip to write a note</a>
+    <a class="skip" href="#note">Skip to write a note</a>
 
     <div class="page">
       <header class="head">
         <a href="../">home</a>
-        <p class="head__mark">guestbook</p>
+        <time class="now" id="now" datetime=""></time>
       </header>
 
       <main>
-        <section class="intro" aria-labelledby="title">
-          <h1 id="title">Leave a line.</h1>
-          <p>
-            Short notes only. They stay on this device — nothing is published
-            for strangers to see.
-          </p>
+        <section class="intro">
+          <p class="intro__kicker">guestbook</p>
+          <h1>Leave a line.</h1>
         </section>
 
         <section class="compose" aria-label="Write a note">
           <label class="sr-only" for="note">Your note</label>
           <textarea
             id="note"
-            rows="3"
+            rows="2"
             maxlength="160"
             placeholder="One quiet sentence…"
           ></textarea>
           <div class="compose__row">
-            <p class="compose__count" aria-live="polite">
-              <span id="count">160</span> left
-            </p>
-            <button type="button" id="add">Add note</button>
+            <span class="compose__count" id="count" aria-live="polite">160</span>
+            <button type="button" id="add">Add</button>
           </div>
           <p class="compose__error" id="error" hidden></p>
         </section>
 
-        <section class="book" aria-labelledby="notes-title">
-          <h2 id="notes-title" class="sr-only">Notes on this device</h2>
+        <section class="book" aria-label="Notes">
           <ol class="list" id="list"></ol>
-          <p class="empty" id="empty">Still empty. Be the first line.</p>
+          <p class="empty" id="empty">Still empty.</p>
         </section>
       </main>
     </div>

@@ -1,5 +1,4 @@
 (() => {
-  // Private by design: notes never leave this browser.
   const KEY = "jorjis.guestbook.lines.v1";
   const MAX = 160;
   const LIMIT = 50;
@@ -10,6 +9,7 @@
   const errorEl = document.getElementById("error");
   const listEl = document.getElementById("list");
   const emptyEl = document.getElementById("empty");
+  const nowEl = document.getElementById("now");
 
   let notes = load();
 
@@ -46,15 +46,38 @@
       .slice(0, MAX);
   }
 
+  function formatNow(date) {
+    const day = new Intl.DateTimeFormat(undefined, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    }).format(date);
+    const time = new Intl.DateTimeFormat(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+    return `${day} · ${time}`;
+  }
+
   function formatWhen(iso) {
     try {
+      const date = new Date(iso);
       return new Intl.DateTimeFormat(undefined, {
-        month: "short",
         day: "numeric",
-      }).format(new Date(iso));
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(date);
     } catch {
       return "";
     }
+  }
+
+  function tickClock() {
+    const now = new Date();
+    nowEl.dateTime = now.toISOString();
+    nowEl.textContent = formatNow(now);
   }
 
   function showError(msg) {
@@ -77,17 +100,13 @@
       .map(
         (n) => `
       <li class="item">
+        <time class="item__when" datetime="${escapeHtml(n.at)}">${escapeHtml(
+          formatWhen(n.at)
+        )}</time>
         <p class="item__text">${escapeHtml(n.text)}</p>
-        <div class="item__meta">
-          <time class="item__when" datetime="${escapeHtml(n.at)}">${escapeHtml(
-            formatWhen(n.at)
-          )}</time>
-          <button type="button" class="item__remove" data-id="${escapeHtml(
-            n.id
-          )}">
-            remove
-          </button>
-        </div>
+        <button type="button" class="item__remove" data-id="${escapeHtml(n.id)}">
+          remove
+        </button>
       </li>`
       )
       .join("");
@@ -123,9 +142,7 @@
       addNote();
     }
   });
-
   addBtn.addEventListener("click", addNote);
-
   listEl.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-id]");
     if (!btn) return;
@@ -134,6 +151,8 @@
     render();
   });
 
+  tickClock();
+  setInterval(tickClock, 30_000);
   updateCount();
   render();
 })();
