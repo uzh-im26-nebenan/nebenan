@@ -98,6 +98,12 @@ h1 {
   font-size: clamp(2.25rem, 9vw, 3rem);
   line-height: 1;
   letter-spacing: -0.02em;
+  margin-bottom: 0.55rem;
+}
+
+.aside {
+  color: var(--fade);
+  font-size: 0.8125rem;
   margin-bottom: 1.75rem;
 }
 
