@@ -1,86 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>jorjis hasan</title>
-    <meta
-      name="description"
-      content="Jorjis Hasan — full-stack engineer. A private directory of work, craft, and correspondence."
-    />
-    <meta property="og:title" content="jorjis hasan" />
-    <meta
-      property="og:description"
-      content="Full-stack engineer. A private directory of work, craft, and correspondence."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="grain" aria-hidden="true"></div>
-    <div class="wash" aria-hidden="true"></div>
+<head>
+  <meta charset="utf-8" />
+  <title>Jorjis Hasan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta
+    name="description"
+    content="Jorjis Hasan — full-stack engineer. Builder of Cornflix and Algokids."
+  />
+  <meta property="og:title" content="Jorjis Hasan" />
+  <meta
+    property="og:description"
+    content="Full-stack engineer. Builder of Cornflix and Algokids."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+</head>
+<body>
+  <div class="content">
+    <section>
+      <section class="drum-machine__section">
+<div class="drum-machine__wrapper">
+    <div class="drum-machine__item drum-machine__item--kick">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path d="M18,17.4648712 L18,21.747965 C21.4504544,20.8598794 24,17.7276789 24,14 C24,9.581722 20.418278,6 16,6 C11.581722,6 8,9.581722 8,14 C8,17.7276789 10.5495456,20.8598794 14,21.747965 L14,17.4648712 C12.8043973,16.7732524 12,15.4805647 12,14 C12,11.790861 13.790861,10 16,10 C18.209139,10 20,11.790861 20,14 C20,15.4805647 19.1956027,16.7732524 18,17.4648712 Z M14,25.8340831 C8.32457332,24.8819269 4,19.9459926 4,14 C4,7.372583 9.372583,2 16,2 C22.627417,2 28,7.372583 28,14 C28,19.9459926 23.6754267,24.8819269 18,25.8340831 L18,30 L14,30 L14,25.8340831 Z"/>
+</svg>
 
-    <header class="menubar">
-      <div class="menubar__brand">jorjis.hasan</div>
-      <nav class="menubar__nav" aria-label="System">
-        <button type="button" data-cmd="about">File</button>
-        <button type="button" data-cmd="work">Edit</button>
-        <button type="button" data-cmd="craft">View</button>
-        <button type="button" data-cmd="contact">Special</button>
-      </nav>
-      <div class="menubar__meta">
-        <span id="clock"></span>
-      </div>
-    </header>
+      <div class="drum-machine__item-key" id="key_kick">Q</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--snare">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path d="M24,14.6303214 C21.8636441,15.524628 19.0484987,16 16,16 C12.9515013,16 10.1363559,15.524628 8,14.6303214 L8,22 C8,22.0382393 8.48478296,22.4967015 9.67171354,22.9714737 C11.2829496,23.6159682 13.5528327,24 16,24 C18.4471673,24 20.7170504,23.6159682 22.3282865,22.9714737 C23.515217,22.4967015 24,22.0382393 24,22 L24,14.6303214 Z M28,10 L28,22 C28,25.8145602 22.5364006,28 16,28 C9.46359943,28 4,25.8145602 4,22 L4,10 C4,6.18543977 9.46359943,4 16,4 C22.5364006,4 28,6.18543977 28,10 Z M16,12 C18.4471673,12 20.7170504,11.6159682 22.3282865,10.9714737 C23.515217,10.4967015 24,10.0382393 24,10 C24,9.96176075 23.515217,9.50329849 22.3282865,9.02852626 C20.7170504,8.38403184 18.4471673,8 16,8 C13.5528327,8 11.2829496,8.38403184 9.67171354,9.02852626 C8.48478296,9.50329849 8,9.96176075 8,10 C8,10.0382393 8.48478296,10.4967015 9.67171354,10.9714737 C11.2829496,11.6159682 13.5528327,12 16,12 Z"/>
+</svg>
 
-    <main class="shell">
-      <section class="hero" aria-label="Identity">
-        <p class="hero__sigil">// personal archive · est. 2019</p>
-        <h1 class="hero__name">jorjis hasan</h1>
-        <p class="hero__line">
-          full-stack engineer · builder of products people return to
-        </p>
+      <div class="drum-machine__item-key" id="key_snare">W</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--clap">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path d="M8,16 L4,4 L16,8 L28,4 L24,16 L28,28 L16,24 L4,28 L8,16 Z M12.2163702,16 L10.3245553,21.6754447 L16,19.7836298 L21.6754447,21.6754447 L19.7836298,16 L21.6754447,10.3245553 L16,12.2163702 L10.3245553,10.3245553 L12.2163702,16 Z"/>
+</svg>
+
+      <div class="drum-machine__item-key" id="key_clap">E</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--closed">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path d="M14,19.9517457 C7.21912647,19.6184665 2,17.5654499 2,14 C2,10.4345501 7.21912647,8.38153354 14,8.04825431 L14,4 L18,4 L18,8.04825431 C24.7808735,8.38153354 30,10.4345501 30,14 C30,17.5654499 24.7808735,19.6184665 18,19.9517457 L18,28 L14,28 L14,19.9517457 Z M14,12.0587396 C11.7527401,12.192216 9.7108903,12.5477008 8.14717416,13.0689395 C7.26842545,13.3618557 6.59965908,13.6897608 6.19869512,14 C6.59965908,14.3102392 7.26842545,14.6381443 8.14717416,14.9310605 C10.1643036,15.603437 12.9770443,16 16,16 C19.0229557,16 21.8356964,15.603437 23.8528258,14.9310605 C24.7315746,14.6381443 25.4003409,14.3102392 25.8013049,14 C25.4003409,13.6897608 24.7315746,13.3618557 23.8528258,13.0689395 C22.2891097,12.5477008 20.2472599,12.192216 18,12.0587396 L18,14 L14,14 L14,12.0587396 Z"/>
+</svg>
+
+      <div class="drum-machine__item-key" id="key_closed">R</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--open">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path fill-rule="evenodd" d="M14,23.9517457 C7.21912647,23.6184665 2,21.5654499 2,18 C2,16.8365578 2.55572351,15.8341569 3.54009513,15 C2.55572351,14.1658431 2,13.1634422 2,12 C2,8.43455014 7.21912647,6.38153354 14,6.04825431 L14,4 L18,4 L18,6.04825431 C24.7808735,6.38153354 30,8.43455014 30,12 C30,13.1634422 29.4442765,14.1658431 28.4599049,15 C29.4442765,15.8341569 30,16.8365578 30,18 C30,21.5654499 24.7808735,23.6184665 18,23.9517457 L18,28 L14,28 L14,23.9517457 Z M14,10.0587396 C11.7527401,10.192216 9.7108903,10.5477008 8.14717416,11.0689395 C7.26842545,11.3618557 6.59965908,11.6897608 6.19869512,12 C6.59965908,12.3102392 7.26842545,12.6381443 8.14717416,12.9310605 C10.1643036,13.603437 12.9770443,14 16,14 C19.0229557,14 21.8356964,13.603437 23.8528258,12.9310605 C24.7315746,12.6381443 25.4003409,12.3102392 25.8013049,12 C25.4003409,11.6897608 24.7315746,11.3618557 23.8528258,11.0689395 C22.2891097,10.5477008 20.2472599,10.192216 18,10.0587396 L18,12 L14,12 L14,10.0587396 Z M8.05324573,17.1006542 C7.22070139,17.3854022 6.58524873,17.7009106 6.19869512,18 C6.59965908,18.3102392 7.26842545,18.6381443 8.14717416,18.9310605 C10.1643036,19.603437 12.9770443,20 16,20 C19.0229557,20 21.8356964,19.603437 23.8528258,18.9310605 C24.7315746,18.6381443 25.4003409,18.3102392 25.8013049,18 C25.4147513,17.7009106 24.7792986,17.3854022 23.9467543,17.1006542 C21.6886126,17.6951493 18.9502684,18 16,18 C13.0497316,18 10.3113874,17.6951493 8.05324573,17.1006542 Z"/>
+</svg>
+
+      <div class="drum-machine__item-key" id="key_open">T</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--cymbal">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path d="M18,11.1715729 L24.5857864,4.58578644 L27.4142136,7.41421356 L20.8284271,14 L26,14 L26,18 L20.8284271,18 L27.4142136,24.5857864 L24.5857864,27.4142136 L18,20.8284271 L18,26 L14,26 L14,20.8284271 L7.41421356,27.4142136 L4.58578644,24.5857864 L11.1715729,18 L6,18 L6,14 L11.1715729,14 L4.58578644,7.41421356 L7.41421356,4.58578644 L14,11.1715729 L14,6 L18,6 L18,11.1715729 Z M14,14 L14,18 L18,18 L18,14 L14,14 Z"/>
+</svg>
+
+      <div class="drum-machine__item-key" id="key_cymbal">Y</div>
+    </div>
+    <div class="drum-machine__item drum-machine__item--cowbell mobile-hide hidden">
+      <svg class="drum-machine__item-glyph" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <path id="glow" fill-rule="nonzero" d="M19.8768944,12 L18.8768944,8 L13.1231056,8 L12.1231056,12 L19.8768944,12 Z M20.8768944,16 L11.1231056,16 L9.12310563,24 L22.8768944,24 L20.8768944,16 Z M22,4 L28,28 L4,28 L10,4 L22,4 Z"/>
+</svg>
+
+      <div class="drum-machine__item-key" id="key_cowbell">U</div>
+    </div>
+        <script src="scripts/howler.core.min.js"></script>
+    <script>
+
+      var instruments = ['kick', 'snare', 'clap', 'open', 'closed', 'cymbal', 'cowbell'];
+      var sounds = {};
+      instruments.forEach(instrument => {
+        sounds[instrument] = new Howl({src: ['sounds/' + instrument + '.wav']})
+      });
+
+      function mouseHandler(inputSound) {
+        inputSound.querySelector(".drum-machine__item-key").classList.remove('sound-played');
+        inputSound.querySelector(".drum-machine__item-glyph").classList.remove('sound-played-glyph');
+        setTimeout(function(){
+          inputSound.querySelector(".drum-machine__item-key").classList.add('sound-played');
+          inputSound.querySelector(".drum-machine__item-glyph").classList.add('sound-played-glyph');
+        }, 0.5);
+      }
+
+      instruments.forEach(instrument => {
+        var domElement = document.querySelector(".drum-machine__item--" + instrument);
+        domElement.ontouchstart = e => {
+          sounds[instrument].play();
+          domElement.classList.add('drum-machine__item--touched');
+        };
+
+        domElement.ontouchend = e => {
+          e.preventDefault();
+          domElement.classList.remove('drum-machine__item--touched');
+        };
+
+        document.querySelector(".drum-machine__item--" + instrument).ontouchstart = function() {
+          sounds[instrument].play();
+          domElement.classList.add('drum-machine__item--touched');
+          event.preventDefault();
+        };
+
+        document.querySelector(".drum-machine__item--" + instrument).onmousedown = function() {
+          mouseHandler(this);
+          sounds[instrument].play();
+        };
+      })
+      
+      document.querySelector(".drum-machine__section").ontouchend = function() {
+        event.preventDefault();
+      };
+
+      document.onkeydown = function (e) {
+        e = e || window.event;
+        if (e.repeat) { return }
+        //clearTimeout(helperTimer);
+        // document.querySelector('.helper-text').classList.remove('helper-text--animated');
+        function keyHandler(inputSound) {
+          // inputSound.classList.remove('sound-played');
+          inputSound.querySelector(".drum-machine__item-key").classList.remove('key-pressed-hold');
+          inputSound.querySelector(".drum-machine__item-glyph").classList.remove('sound-played-glyph');
+          setTimeout(function(){
+            // inputSound.classList.add('sound-played');
+            inputSound.querySelector(".drum-machine__item-key").classList.add('key-pressed-hold');
+            inputSound.querySelector(".drum-machine__item-glyph").classList.add('sound-played-glyph');
+          }, 0.5);
+        }
+
+        // A
+        if(e.keyCode == "81"){
+          sounds['kick'].play();
+          keyHandler(document.getElementsByClassName("drum-machine__item--kick")[0]);
+        }
+        // S
+        if(e.keyCode == "87"){
+          sounds['snare'].play();
+          //keyHandler(key_snare);
+          keyHandler(document.getElementsByClassName("drum-machine__item--snare")[0]);
+        }
+        // D
+        if(e.keyCode == "69"){
+          sounds['clap'].play();
+          //keyHandler(key_clap);
+          keyHandler(document.getElementsByClassName("drum-machine__item--clap")[0]);
+        }
+        // F
+        if(e.keyCode == "82"){
+          sounds['closed'].play();
+          // keyHandler(key_closed);
+          keyHandler(document.getElementsByClassName("drum-machine__item--closed")[0]);
+        }
+        // G
+        if(e.keyCode == "84"){
+          sounds['open'].play();
+          // keyHandler(key_open);
+          keyHandler(document.getElementsByClassName("drum-machine__item--open")[0]);
+        }
+        // H
+        if(e.keyCode == "89"){
+          sounds['cymbal'].play();
+          // keyHandler(key_cymbal);
+          keyHandler(document.getElementsByClassName("drum-machine__item--cymbal")[0]);
+        }
+        // J
+        if(e.keyCode == "85"){
+          document.querySelector(".drum-machine__item--cowbell").classList.remove('hidden');
+          //document.querySelector(".drum-machine__item--cowbell").classList.add("drum-intro");
+          sounds['cowbell'].play();
+          // keyHandler(key_cowbell);
+          keyHandler(document.getElementsByClassName("drum-machine__item--cowbell")[0]);
+        }
+      };
+
+      document.onkeyup = function (e) {
+        e = e || window.event;
+        //clearTimeout(helperTimer);
+        // document.querySelector('.helper-text').classList.remove('helper-text--animated');
+        function keyHandler(inputSound) {
+          // inputSound.classList.remove('sound-played');
+          inputSound.querySelector(".drum-machine__item-key").classList.remove('key-pressed-hold');
+        }
+
+        // A
+        if(e.keyCode == "81"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--kick")[0]);
+        }
+        // S
+        if(e.keyCode == "87"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--snare")[0]);
+        }
+        // D
+        if(e.keyCode == "69"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--clap")[0]);
+        }
+        // F
+        if(e.keyCode == "82"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--closed")[0]);
+        }
+        // G
+        if(e.keyCode == "84"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--open")[0]);
+        }
+        // H
+        if(e.keyCode == "89"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--cymbal")[0]);
+        }
+        // J
+        if(e.keyCode == "85"){
+          keyHandler(document.getElementsByClassName("drum-machine__item--cowbell")[0]);
+        }
+      };
+
+      var urlParams = new URLSearchParams(window.location.search);
+      var drums = document.getElementsByClassName("drum-machine__item");
+
+
+      if (!urlParams.has('back')) {
+        var helperTimer = setTimeout( function() {
+          // document.querySelector('.helper-text').classList.add('helper-text--animated');
+        }, 2275);
+        for (var i = 0; i < drums.length - 1; i++) {
+          let j = i;
+          drums[j].style.opacity = 0;
+          if (j == 5) {
+            drums[j].classList.add("drum-intro-2");
+          } else {
+            drums[j].classList.add("drum-intro");
+          }
+        }
+
+        setTimeout( function() {
+          for (var i = 0; i < drums.length; i++) {
+            let j = i;
+            drums[j].style.opacity = 1;
+            drums[j].classList.remove("drum-intro");
+            if (j==5) {
+              setTimeout( function() {
+                drums[j].classList.remove("drum-intro-2");
+              }, 210);
+            }
+          }
+        }, 351+(72*(drums.length+1)));
+      }
+
+      // ((((2**((i+2)*.4))/3)-.3333333)*400)+300)
+    </script>
+    
       </section>
+    </section>
 
-      <section class="fs" aria-label="Directory">
-        <div class="fs__prompt">
-          <span class="fs__cwd">~/jorjis_hasan</span>
-          <span class="fs__blink" aria-hidden="true"></span>
-        </div>
-        <pre class="tree" id="tree" tabindex="0"></pre>
-      </section>
-    </main>
-
-    <aside class="viewer" id="viewer" hidden>
-      <div class="viewer__frame" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
-        <header class="viewer__bar">
-          <div class="viewer__traffic" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <h2 class="viewer__title" id="viewer-title"></h2>
-          <button type="button" class="viewer__close" id="viewer-close" aria-label="Close">
-            esc
-          </button>
-        </header>
-        <div class="viewer__body">
-          <pre class="viewer__text" id="viewer-body"></pre>
-        </div>
-      </div>
-    </aside>
-
-    <footer class="status">
-      <span>ready</span>
-      <span class="status__sep">·</span>
-      <span id="status-path">select a file</span>
-      <span class="status__sep">·</span>
-      <span>mono · 12pt</span>
-    </footer>
-
-    <script src="app.js"></script>
-  </body>
+    <section class="article-body">
+      <p>
+        Full-stack engineer. Builder of
+        <a href="https://cornflix.app/" target="_blank" rel="noopener noreferrer">Cornflix</a>
+        and
+        <a href="https://algokid.vercel.app/" target="_blank" rel="noopener noreferrer">Algokids</a>,
+        serving tens of thousands of people a day. Previously of
+        <a href="https://freej.ae/" target="_blank" rel="noopener noreferrer">Freej Almarar</a>,
+        <a href="https://www.zeer.studio/" target="_blank" rel="noopener noreferrer">Zeer Studio</a>,
+        and
+        <a href="https://www.hackerrank.com/" target="_blank" rel="noopener noreferrer">HackerRank</a>.
+        You can reach me on
+        <a href="https://github.com/jorjishasan" target="_blank" rel="noopener noreferrer">GitHub</a>
+        and
+        <a href="https://twitter.com/jorjis_hasan" target="_blank" rel="noopener noreferrer">Twitter</a>,
+        or at
+        <a href="mailto:speak.jorjis@gmail.com">speak.jorjis@gmail.com</a>.
+        Dance to the beat of your own drum.
+      </p>
+      <p style="color: #9EA1A9;">– jorjis</p>
+    </section>
+  </div>
+</body>
 </html>
