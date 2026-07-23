@@ -7,31 +7,32 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
-    <meta name="description" content="An open page." />
+    <meta name="description" content="An open page without edges." />
     <link rel="stylesheet" href="guestbook.css" />
   </head>
   <body>
-    <nav class="nav">
-      <a href="../">home</a>
-      <div class="nav__modes">
-        <button type="button" data-mode="write" class="is-active">write</button>
-        <button type="button" data-mode="draw">draw</button>
+    <div class="app" id="app">
+      <header class="top">
+        <a href="../">home</a>
+        <p class="top__hint">draw freely · space+drag to pan · scroll to zoom · double-click for a note</p>
+      </header>
+
+      <div class="stage" id="stage">
+        <canvas id="paper" aria-label="Infinite guestbook"></canvas>
+        <div class="world" id="world"></div>
       </div>
-      <button type="button" id="clear" class="nav__clear" hidden>clear</button>
-    </nav>
 
-    <div
-      id="write"
-      class="write"
-      contenteditable="true"
-      role="textbox"
-      aria-label="Write"
-      data-placeholder="Begin anywhere."
-      spellcheck="true"
-    ></div>
+      <aside class="map" aria-label="Map controls">
+        <button type="button" id="zoom-in" title="Zoom in">+</button>
+        <button type="button" id="zoom-out" title="Zoom out">−</button>
+        <button type="button" id="zoom-reset" title="Reset view">◎</button>
+        <button type="button" id="play" title="Play notes" aria-label="Play notes">
+          ▶
+        </button>
+      </aside>
 
-    <canvas id="draw" class="draw" hidden aria-label="Draw"></canvas>
-
+      <div class="toast" id="toast" hidden></div>
+    </div>
     <script src="guestbook.js"></script>
   </body>
 </html>
