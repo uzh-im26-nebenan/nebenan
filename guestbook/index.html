@@ -12,37 +12,125 @@
   </head>
   <body>
     <div class="app" id="app">
-      <div class="progress" id="progress" hidden>
-        <div class="progress__bar" id="progress-bar"></div>
-      </div>
-
       <header class="top">
-        <a href="../">home</a>
-        <p class="top__hint">scroll or drag to move · double-click to leave a note</p>
+        <a class="icon-btn" href="../" title="Home" aria-label="Home">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M4 11.5 L12 4.5 L20 11.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M7 10.5 V19 H17 V10.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+
+        <div class="top__tools">
+          <button
+            type="button"
+            class="icon-btn"
+            id="brush"
+            title="Brush"
+            aria-label="Brush"
+            aria-pressed="false"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M14.8 3.8 L20.2 9.2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+              <path
+                d="M13.2 5.3 L18.7 10.8 L11.4 18.1 C10.7 18.8 9.8 19.2 8.8 19.3 L5.2 19.7 C4.7 19.8 4.2 19.3 4.3 18.8 L4.7 15.2 C4.8 14.2 5.2 13.3 5.9 12.6 Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M5.1 18.9 C6.4 17.2 7.8 16.4 9.2 16.1"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p class="top__hint" id="hint">
+          drag to move · double-click for a note
+        </p>
       </header>
 
       <div class="stage" id="stage">
         <div class="paper" id="paper" aria-hidden="true"></div>
+        <canvas id="ink" aria-hidden="true"></canvas>
         <div class="world" id="world"></div>
       </div>
 
       <aside class="map" aria-label="Controls">
-        <button type="button" id="zoom-in" title="Zoom in">+</button>
-        <button type="button" id="zoom-out" title="Zoom out">−</button>
-        <button type="button" id="zoom-reset" title="Reset view">◎</button>
-        <button
-          type="button"
-          id="play"
-          class="map__play"
-          title="Play notes"
-          aria-label="Play notes"
-        >
-          ▶
+        <button type="button" class="icon-btn" id="zoom-in" title="Zoom in" aria-label="Zoom in">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M16 16.5 L20 20.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M11 8.5 V13.5 M8.5 11 H13.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" id="zoom-out" title="Zoom out" aria-label="Zoom out">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M16 16.5 L20 20.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M8.5 11 H13.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" id="zoom-reset" title="Reset view" aria-label="Reset view">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M12 2.8 V5.2 M12 18.8 V21.2 M2.8 12 H5.2 M18.8 12 H21.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+        <button type="button" class="icon-btn map__play" id="play" title="Play notes" aria-label="Play notes">
+          <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8.5 6.5 L17.5 12 L8.5 17.5 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+          </svg>
+          <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true" hidden>
+            <path d="M8 6.5 V17.5 M16 6.5 V17.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
         </button>
       </aside>
 
       <div class="toast" id="toast" hidden></div>
     </div>
+
+    <template id="icon-close">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 7 L17 17 M17 7 L7 17" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </svg>
+    </template>
+    <template id="icon-pause">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 6.5 V17.5 M16 6.5 V17.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+    </template>
+    <template id="icon-play">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8.5 6.5 L17.5 12 L8.5 17.5 Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+      </svg>
+    </template>
+
     <script src="guestbook.js"></script>
   </body>
 </html>
