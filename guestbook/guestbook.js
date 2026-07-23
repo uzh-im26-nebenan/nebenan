@@ -1,5 +1,5 @@
 (() => {
-  const KEY = "jorjis.guestbook.lines.v1";
+  const KEY = "jorjis.guestbook.lines.v2";
   const MAX = 160;
   const LIMIT = 50;
 
@@ -11,15 +11,39 @@
   const emptyEl = document.getElementById("empty");
   const nowEl = document.getElementById("now");
 
+  function daysAgo(days, hour, minute) {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    d.setHours(hour, minute, 0, 0);
+    return d.toISOString();
+  }
+
+  const SAMPLES = [
+    {
+      id: "sample-1",
+      text: "Passed through. Left the door ajar.",
+      at: daysAgo(18, 21, 14),
+    },
+    {
+      id: "sample-2",
+      text: "Quiet page. Loud internet.",
+      at: daysAgo(3, 9, 42),
+    },
+  ];
+
   let notes = load();
 
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
+      if (raw == null) {
+        localStorage.setItem(KEY, JSON.stringify(SAMPLES));
+        return SAMPLES.slice();
+      }
+      const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed.slice(0, LIMIT) : [];
     } catch {
-      return [];
+      return SAMPLES.slice();
     }
   }
 
@@ -65,6 +89,7 @@
       return new Intl.DateTimeFormat(undefined, {
         day: "numeric",
         month: "short",
+        year: "numeric",
         hour: "numeric",
         minute: "2-digit",
       }).format(new Date(iso));
@@ -80,6 +105,8 @@
 
   function updateCount() {
     countEl.textContent = String(MAX - noteEl.value.length);
+    noteEl.style.height = "auto";
+    noteEl.style.height = `${noteEl.scrollHeight}px`;
   }
 
   function render() {
