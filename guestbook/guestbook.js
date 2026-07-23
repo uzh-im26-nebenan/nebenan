@@ -1,5 +1,5 @@
 (() => {
-  const KEY = "jorjis.guestbook.lines.v2";
+  const KEY = "jorjis.guestbook.lines.v3";
   const MAX = 160;
   const LIMIT = 50;
 
@@ -35,11 +35,6 @@
   const samples = [
     {
       id: "sample-1",
-      text: "Passed through. Left the door ajar.",
-      at: ago(18, 21, 14),
-    },
-    {
-      id: "sample-2",
       text: "Quiet page. Loud internet.",
       at: ago(3, 9, 42),
     },
