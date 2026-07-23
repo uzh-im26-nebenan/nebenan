@@ -201,21 +201,19 @@ html {
 }
 
 @font-face {
-    font-family: "IBM Plex Sans";
-    src: url("/fonts/Lars-Regular.woff2") format("woff2"), url("/fonts/Lars-Regular.woff") format("woff");
-    font-style: normal
+    font-family: "Lars";
+    src: url("../fonts/Lars-Regular.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
 }
 
 @font-face {
-    font-family: "IBM Plex Sans";
-    src: url("/fonts/TrueSans-RegularWeb.woff2") format("woff2"), url("/fonts/TrueSans-RegularWeb.woff") format("woff");
-    font-style: normal
-}
-
-@font-face {
-    font-family: "IBM Plex Mono";
-    src: url("/fonts/Lars-Mono.woff2") format("woff2"), url("/fonts/Lars-Mono.woff") format("woff");
-    font-style: mono
+    font-family: "Lars Mono";
+    src: url("../fonts/Lars-Mono.woff2") format("woff2");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
 }
 
 h1,
@@ -231,7 +229,7 @@ p {
 }
 
 h1 {
-    font-family: -apple-system, "IBM Plex Sans", Helvetica Neue, Arial, sans-serif;
+    font-family: Lars, Helvetica Neue, Arial, sans-serif;
     font-weight: 400;
     font-size: 2rem;
     line-height: 1.6
@@ -239,7 +237,7 @@ h1 {
 
 h2,
 .drum-machine__item-key {
-    font-family: "IBM Plex Mono", monospace;
+    font-family: "Lars Mono", monospace;
     font-weight: 400;
     color: #9EA1A9;
     font-size: .89rem;
@@ -248,14 +246,14 @@ h2,
 }
 
 h3 {
-    font-family: "IBM Plex Sans", Helvetica Neue, Arial, sans-serif;
+    font-family: Lars, Helvetica Neue, Arial, sans-serif;
     font-weight: 400;
     font-size: 1.1rem;
     line-height: 1.9
 }
 
 h4 {
-    font-family: "IBM Plex Sans", Helvetica Neue, Arial, sans-serif;
+    font-family: Lars, Helvetica Neue, Arial, sans-serif;
     font-weight: 400;
     color: #2D2F32;
     font-size: .89rem;
@@ -263,7 +261,7 @@ h4 {
 }
 
 h5 {
-    font-family: "IBM Plex Sans", Helvetica Neue, Arial, sans-serif;
+    font-family: Lars, Helvetica Neue, Arial, sans-serif;
     font-weight: 400;
     color: #9EA1A9;
     font-size: .89rem;
@@ -280,7 +278,7 @@ h5 {
 
 body,
 p {
-    font-family: "IBM Plex Sans", Helvetica Neue, Arial, sans-serif;
+    font-family: Lars, Helvetica Neue, Arial, sans-serif;
     /* font-size: 1rem; */
     line-height: 1.8
 }
