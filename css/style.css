@@ -332,6 +332,13 @@ a:hover {
     color: #2017E2;
 }
 
+.article-body a.cite,
+.article-body a.cite:link,
+.article-body a.cite:visited,
+.article-body a.cite:active {
+    text-decoration: underline;
+}
+
 a:active {
     text-decoration: none;
     text-decoration: underline
