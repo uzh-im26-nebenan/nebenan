@@ -313,6 +313,25 @@ a:hover {
     text-decoration: underline
 }
 
+.article-body a,
+.article-body a:link,
+.article-body a:visited,
+.article-body a:active {
+    text-decoration: none;
+}
+
+.article-body a:hover {
+    text-decoration: underline;
+}
+
+.article-body a.handle,
+.article-body a.handle:link,
+.article-body a.handle:visited,
+.article-body a.handle:hover,
+.article-body a.handle:active {
+    color: #2017E2;
+}
+
 a:active {
     text-decoration: none;
     text-decoration: underline
