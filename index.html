@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>nebenan. Zürich</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="#/">
+        <span class="mark">
+          <img src="assets/icons/move-up-right.svg" width="23" height="23" alt="">
+        </span>
+        <span class="wordmark">nebenan.</span>
+        <span class="brand-city">ZÜRICH</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#/">Discover</a>
+        <span class="nav-muted">For students</span>
+        <span class="badge-green">Planned</span>
+      </nav>
+      <div class="location">
+        <img src="assets/icons/map-pin.svg" width="17" height="17" alt="">
+        <span>From Zürich HB</span>
+        <span class="lang">EN</span>
+      </div>
+    </header>
+    <main id="view"></main>
+    <footer class="footer">
+      <p>nebenan. Zürich — Short trips. Great ideas.</p>
+      <p>Static mock-up · illustrative weather &amp; information · planned data source: Open-Meteo</p>
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
