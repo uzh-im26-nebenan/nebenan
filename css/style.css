@@ -247,7 +247,21 @@ button { font: inherit; color: inherit; }
 }
 
 .forecast-head { align-items: center; font-size: 13px; }
-.rain-key { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; }
+.forecast-tools { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.day-pills { display: flex; gap: 4px; padding: 3px; background: var(--hour); border-radius: 8px; }
+.day-pill {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.day-pill.is-active { background: var(--white); color: var(--ink); font-weight: 600; }
+.rain-key { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; flex: none; }
 
 .hours { display: flex; gap: 8px; }
 
@@ -306,12 +320,14 @@ button { font: inherit; color: inherit; }
 
 .filter-extra { display: flex; gap: 12px; align-items: center; }
 
+.discover { position: relative; }
+
 .filters {
   position: relative;
-  z-index: 1100;
+  z-index: 1200;
 }
 
-.price-menu { position: relative; }
+.price-menu { position: relative; z-index: 1200; }
 
 .price-button,
 .car-chip { padding: 11px 14px; border-radius: var(--radius-sm); font-size: 13px; }
@@ -329,7 +345,7 @@ button { font: inherit; color: inherit; }
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  z-index: 2;
+  z-index: 1200;
   min-width: 168px;
   margin: 0;
   padding: 4px;
@@ -360,13 +376,21 @@ button { font: inherit; color: inherit; }
 .sort { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 
 .results {
+  position: relative;
+  z-index: 0;
   display: grid;
   grid-template-columns: minmax(320px, 552px) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
 
-.activity-list { display: flex; flex-direction: column; gap: 12px; }
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 636px;
+  overflow: auto;
+}
 
 .activity-card {
   display: flex;
@@ -707,6 +731,8 @@ button { font: inherit; color: inherit; }
   .results,
   .detail-layout,
   .tips { grid-template-columns: 1fr; }
+
+  .activity-list { max-height: none; }
 
   .map-frame { height: 420px; }
   .map-frame.is-compact { height: 280px; }

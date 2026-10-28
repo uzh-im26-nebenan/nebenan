@@ -1,5 +1,15 @@
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[character]));
+}
+
 function pinIcon(place, active) {
-  const name = active ? `<span class="pin-name">${place.shortName}</span>` : "";
+  const name = active ? `<span class="pin-name">${escapeHtml(place.shortName)}</span>` : "";
   return L.divIcon({
     className: "pin-wrap",
     html: `<div class="pin-stack"><div class="pin${active ? " is-active" : ""}">${place.id}</div>${name}</div>`,
@@ -20,7 +30,7 @@ function stationIcon() {
 function routeIcon(label) {
   return L.divIcon({
     className: "route-wrap",
-    html: `<div class="route-label">${label}</div>`,
+    html: `<div class="route-label">${escapeHtml(label)}</div>`,
     iconSize: [48, 20],
     iconAnchor: [24, 10],
   });
@@ -59,7 +69,7 @@ export function createMap(container, { places, activeId, hb, onSelect, onHover }
       zIndexOffset: place.id === activeId ? 800 : 0,
       title: place.title,
     }).addTo(map);
-    marker.on("click", () => onSelect(place.id));
+    marker.on("click", () => onSelect(place.placeKey || place.id));
     if (onHover) marker.on("mouseover", () => onHover(place.id));
     markers.set(place.id, { marker, place });
   });

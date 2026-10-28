@@ -1,6 +1,7 @@
-import { activities, getActivity, ZURICH_HB } from "../data/activities.js";
+import { ZURICH_HB } from "../data/activities.js";
 import { createMap } from "./map.js";
-import { FALLBACK_WEATHER, fetchWeather, suggestionLine, whyItFits } from "./weather.js";
+import { fallbackPlaces, fetchPlaces } from "./places.js";
+import { FALLBACK_WEATHER, fetchWeather, scoreActivity, suggestionLine, weatherForDay, whyItFits } from "./weather.js";
 
 const ICONS = {
   "arrow-left": ["assets/icons/arrow-left.svg", 18, 18],
@@ -29,21 +30,32 @@ const ICONS = {
 };
 
 const BUDGETS = [
-  { id: "any", label: "Any price" },
+  { id: "any", label: "All prices" },
   { id: "free", label: "Free" },
   { id: "15", label: "Up to CHF 15" },
+];
+
+const DAYS = [
+  { id: 0, label: "Today" },
+  { id: 1, label: "Tomorrow" },
+  { id: 2, label: "In 2 days" },
 ];
 
 const view = document.querySelector("#view");
 const state = {
   setting: "all",
-  budget: "15",
+  budget: "any",
   carFreeOnly: true,
   activeId: "01",
+  activeKey: null,
+  day: 0,
   menuOpen: false,
 };
 
 let weather = { ...FALLBACK_WEATHER, hours: FALLBACK_WEATHER.hours.map((hour) => ({ ...hour })) };
+let forecastPayload = { live: false };
+let sourcePlaces = fallbackPlaces();
+let ranked = [];
 let mapHandle = null;
 
 function icon(name, className = "") {
@@ -64,7 +76,7 @@ function escapeHtml(value) {
 function passesShared(activity) {
   if (state.carFreeOnly && !activity.carFree) return false;
   if (state.budget === "free") return activity.priceValue === 0;
-  if (state.budget === "15") return activity.priceValue <= 15;
+  if (state.budget === "15") return typeof activity.priceValue === "number" && activity.priceValue <= 15;
   return true;
 }
 
@@ -73,11 +85,41 @@ function passesSetting(activity, setting) {
 }
 
 function visibleActivities() {
-  return activities.filter((activity) => passesShared(activity) && passesSetting(activity, state.setting));
+  return ranked.filter((activity) => passesShared(activity) && passesSetting(activity, state.setting));
 }
 
 function countFor(setting) {
-  return activities.filter((activity) => passesShared(activity) && passesSetting(activity, setting)).length;
+  return ranked.filter((activity) => passesShared(activity) && passesSetting(activity, setting)).length;
+}
+
+function findPlace(key) {
+  return ranked.find((activity) => activity.placeKey === key || activity.id === key) ?? null;
+}
+
+function rankActivities(list, report) {
+  return list
+    .map((activity) => ({
+      ...activity,
+      score: scoreActivity(activity, report),
+      weatherNote: whyItFits(activity, report),
+    }))
+    .sort((a, b) => b.score - a.score || a.distanceMeters - b.distanceMeters)
+    .map((activity, index) => {
+      const id = String(index + 1).padStart(2, "0");
+      return {
+        ...activity,
+        id,
+        mapCaption: `${id} · ${activity.shortName} · ${activity.routeLabel} from Zürich HB`,
+      };
+    });
+}
+
+function applyRank() {
+  ranked = rankActivities(sourcePlaces, weather);
+  if (state.activeKey) {
+    const match = ranked.find((activity) => activity.placeKey === state.activeKey);
+    if (match) state.activeId = match.id;
+  }
 }
 
 function parseRoute() {
@@ -89,8 +131,10 @@ function parseRoute() {
 }
 
 function weatherMeta(report) {
-  if (report.feelsLike == null) return `Wind ${report.wind} km/h`;
-  return `Feels like ${report.feelsLike}° · Wind ${report.wind} km/h`;
+  const parts = [];
+  if (report.feelsLike != null) parts.push(`Feels like ${report.feelsLike}°`);
+  if (report.wind != null) parts.push(`Wind ${report.wind} km/h`);
+  return parts.join(" · ");
 }
 
 function currentIcon(report) {
@@ -119,7 +163,7 @@ function hourCells() {
   return weather.hours
     .map(
       (hour) => `
-        <div class="hour${hour.label === "Now" ? " is-now" : ""}${hour.rainy ? " is-rain" : ""}">
+        <div class="hour${hour.label === "Now" || hour.current ? " is-now" : ""}${hour.rainy ? " is-rain" : ""}">
           <span>${escapeHtml(hour.label)}</span>
           ${icon(hour.icon)}
           <strong>${hour.temp}°</strong>
@@ -128,6 +172,16 @@ function hourCells() {
       `,
     )
     .join("");
+}
+
+function dayPills() {
+  return DAYS.map(
+    (day) => `
+      <button type="button" class="day-pill${state.day === day.id ? " is-active" : ""}" data-day="${day.id}">
+        ${day.label}
+      </button>
+    `,
+  ).join("");
 }
 
 function budgetMenu() {
@@ -157,7 +211,7 @@ function budgetMenu() {
 function activityCard(activity) {
   const active = activity.id === state.activeId ? " is-active" : "";
   return `
-    <a class="activity-card${active}" href="#/activity/${activity.id}" data-activity="${activity.id}">
+    <a class="activity-card${active}" href="#/activity/${encodeURIComponent(activity.placeKey)}" data-activity="${activity.id}">
       <img class="card-photo" src="${activity.image}" alt="${escapeHtml(activity.title)}">
       <div class="card-body">
         <div class="card-top">
@@ -192,11 +246,15 @@ function renderMain() {
   const visible = visibleActivities();
   if (visible.length && !visible.some((activity) => activity.id === state.activeId)) {
     state.activeId = visible[0].id;
+    state.activeKey = visible[0].placeKey;
   }
   const cards = visible.length
     ? visible.map(activityCard).join("")
     : `<p class="empty">No ideas match these filters.</p>`;
-  const matched = weather.live ? "today’s forecast" : "the demo forecast";
+  const matched = weather.live
+    ? ["today’s forecast", "tomorrow’s forecast", "the forecast in 2 days"][state.day]
+    : "the demo forecast";
+  const nearLabel = ["Near you today", "Near you tomorrow", "Near you in 2 days"][state.day];
   const ideaCount = visible.length === 1 ? "1 idea" : `${visible.length} ideas`;
 
   view.innerHTML = `
@@ -228,7 +286,10 @@ function renderMain() {
           </div>
           <div class="forecast">
             <div class="forecast-head">
-              <span>${forecastHeading()}</span>
+              <div class="forecast-tools">
+                <span>${forecastHeading()}</span>
+                <div class="day-pills" role="group" aria-label="Forecast day">${dayPills()}</div>
+              </div>
               <span class="rain-key">${icon("droplet")}Chance of rain</span>
             </div>
             <div class="hours">${hourCells()}</div>
@@ -251,13 +312,13 @@ function renderMain() {
           <div class="filter-extra">
             ${budgetMenu()}
             <button type="button" class="car-chip" data-action="toggle-car" aria-pressed="${state.carFreeOnly}">
-              ${icon("leaf")}Reachable without a car
+              ${icon("leaf")}Reachable on foot/transit
             </button>
           </div>
         </div>
         <div class="results-head">
           <div>
-            <h2>Near you today</h2>
+            <h2>${nearLabel}</h2>
             <p>${ideaCount} · routes from Zürich HB · matched to ${matched}</p>
           </div>
           <div class="sort"><span>Sorted by weather suitability</span>${icon("sort")}</div>
@@ -333,7 +394,7 @@ function renderDetail(activity) {
             <span class="hero-note">Illustrative AI-generated location image</span>
           </div>
           <section class="why">
-            <h2>${icon("cloud-rain")}Why it fits today</h2>
+            <h2>${icon("cloud-rain")}${["Why it fits today", "Why it fits tomorrow", "Why it fits in 2 days"][state.day]}</h2>
             <p>${escapeHtml(whyItFits(activity, weather))}</p>
             <div class="why-foot">
               <span>${escapeHtml(suggestionLine(activity, weather))}</span>
@@ -364,7 +425,8 @@ function renderDetail(activity) {
   `;
 
   state.activeId = activity.id;
-  mountMap(activities, false);
+  state.activeKey = activity.placeKey;
+  mountMap(ranked, false);
 }
 
 function renderMissing() {
@@ -393,16 +455,19 @@ function mountMap(places, hoverable) {
 }
 
 function highlight(id) {
-  if (!id || state.activeId === id) return;
+  const place = ranked.find((activity) => activity.id === id);
+  if (!place || state.activeId === id) return;
   state.activeId = id;
+  state.activeKey = place.placeKey;
   view.querySelectorAll("[data-activity]").forEach((card) => {
     card.classList.toggle("is-active", card.dataset.activity === id);
   });
   mapHandle?.setActive(id);
 }
 
-function openActivity(id) {
-  const next = `#/activity/${id}`;
+function openActivity(key) {
+  const place = ranked.find((activity) => activity.placeKey === key || activity.id === key);
+  const next = `#/activity/${encodeURIComponent(place?.placeKey || key)}`;
   if (location.hash !== next) location.hash = next;
 }
 
@@ -415,7 +480,7 @@ function render() {
   teardownMap();
   const route = parseRoute();
   if (route.name === "detail") {
-    const activity = getActivity(route.id);
+    const activity = findPlace(route.id);
     if (!activity) {
       renderMissing();
       return;
@@ -456,6 +521,16 @@ view.addEventListener("click", (event) => {
     return;
   }
 
+  const day = event.target.closest("[data-day]");
+  if (day) {
+    state.day = Number(day.dataset.day);
+    weather = weatherForDay(forecastPayload, state.day);
+    applyRank();
+    state.menuOpen = false;
+    render();
+    return;
+  }
+
   if (event.target.closest("[data-action='toggle-car']")) {
     state.carFreeOnly = !state.carFreeOnly;
     state.menuOpen = false;
@@ -487,9 +562,18 @@ window.addEventListener("hashchange", () => {
   render();
 });
 
+applyRank();
 render();
-fetchWeather().then((report) => {
-  if (!report.live) return;
-  weather = report;
+
+fetchPlaces().then((places) => {
+  sourcePlaces = places;
+  applyRank();
+  render();
+});
+
+fetchWeather().then((payload) => {
+  forecastPayload = payload;
+  weather = weatherForDay(payload, state.day);
+  applyRank();
   render();
 });

@@ -1,5 +1,5 @@
 const FORECAST_URL =
-  "https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&timezone=Europe%2FZurich";
+  "https://api.open-meteo.com/v1/forecast?latitude=47.3769&longitude=8.5417&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&timezone=Europe%2FZurich&forecast_days=3";
 
 const FALLBACK_HOURS = [
   { label: "Now", icon: "cloud-sun", temp: 13, rain: 20, rainy: false },
@@ -27,6 +27,7 @@ export const FALLBACK_WEATHER = {
   summary: "Head out now, stay indoors after 15:00.",
   hours: FALLBACK_HOURS,
   rainWindow: { from: "15:00", probability: 75, temp: 13 },
+  peakRain: 80,
 };
 
 export function describeCode(code) {
@@ -55,8 +56,8 @@ function dateLabel(date) {
   return `ZÜRICH · ${formatted.toUpperCase()}`;
 }
 
-function zurichStamp(date) {
-  const parts = Object.fromEntries(
+function zurichParts(date) {
+  return Object.fromEntries(
     new Intl.DateTimeFormat("en-GB", {
       timeZone: "Europe/Zurich",
       year: "numeric",
@@ -69,10 +70,15 @@ function zurichStamp(date) {
       .formatToParts(date)
       .map((part) => [part.type, part.value]),
   );
-  return {
-    hourKey: `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:00`,
-    clock: `${parts.hour}:${parts.minute}`,
-  };
+}
+
+function zurichDayKey(dayOffset) {
+  const parts = zurichParts(new Date());
+  const utc = new Date(Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day) + dayOffset));
+  const year = utc.getUTCFullYear();
+  const month = String(utc.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(utc.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function summaryFor(hours) {
@@ -83,81 +89,188 @@ function summaryFor(hours) {
   return "A dry stretch ahead — outdoor plans look comfortable.";
 }
 
-function parseForecast(data) {
-  const current = data?.current;
-  const hourly = data?.hourly;
-  if (!current || !hourly?.time?.length) return { ...FALLBACK_WEATHER, hours: FALLBACK_HOURS.map((hour) => ({ ...hour })) };
+function hourRecord(time, temp, rainValue, code, label) {
+  const described = describeCode(code);
+  const rain = Math.round(rainValue ?? 0);
+  return {
+    label,
+    icon: described.icon,
+    condition: described.label,
+    temp: Math.round(temp),
+    rain,
+    rainy: rain >= 50,
+    code,
+  };
+}
 
-  const now = new Date();
-  const stamp = zurichStamp(now);
-  let index = hourly.time.findIndex((time) => time >= stamp.hourKey);
-  if (index < 0) index = Math.max(0, hourly.time.length - 7);
-  const slice = hourly.time.slice(index, index + 7);
-  if (!slice.length) return { ...FALLBACK_WEATHER, hours: FALLBACK_HOURS.map((hour) => ({ ...hour })) };
-
-  const described = describeCode(current.weather_code);
-  const hours = slice.map((time, offset) => {
-    const sourceIndex = index + offset;
-    const rain = Math.round(hourly.precipitation_probability?.[sourceIndex] ?? 0);
-    const code = hourly.weather_code?.[sourceIndex];
-    const hourDescribed = describeCode(code);
-    return {
-      label: offset === 0 ? "Now" : time.slice(11, 16),
-      icon: offset === 0 ? described.icon : hourDescribed.icon,
-      temp: Math.round(
-        offset === 0 ? current.temperature_2m : hourly.temperature_2m?.[sourceIndex] ?? current.temperature_2m,
-      ),
-      rain,
-      rainy: rain >= 50,
-    };
-  });
-
+function viewFromHours({ date, timeLabel, temp, condition, icon, wind, feelsLike, hours, live }) {
   const rainIndex = hours.findIndex((hour) => hour.rain >= 50);
   const rainHour = rainIndex >= 0 ? hours[rainIndex] : null;
-  const rainSource = rainIndex >= 0 ? index + rainIndex : -1;
-
+  const peakRain = hours.reduce((max, hour) => Math.max(max, hour.rain), 0);
   return {
-    live: true,
-    dateLabel: dateLabel(now),
-    badge: "Live · Open-Meteo",
-    sourceLine: "Weather source: Open-Meteo",
-    detailSource: "Live data · Open-Meteo",
+    live,
+    dateLabel: dateLabel(date),
+    badge: live ? "Live · Open-Meteo" : FALLBACK_WEATHER.badge,
+    sourceLine: live ? "Weather source: Open-Meteo" : FALLBACK_WEATHER.sourceLine,
+    detailSource: live ? "Live data · Open-Meteo" : FALLBACK_WEATHER.detailSource,
     place: "Central Zürich",
-    timeLabel: stamp.clock,
-    temp: Math.round(current.temperature_2m),
-    condition: described.label,
-    icon: described.icon,
-    feelsLike: null,
-    wind: Math.round(current.wind_speed_10m ?? 0),
+    timeLabel,
+    temp,
+    condition,
+    icon,
+    feelsLike,
+    wind,
     summary: summaryFor(hours),
     hours,
     rainWindow: rainHour
       ? {
-          from: rainHour.label === "Now" ? stamp.clock : rainHour.label,
+          from: rainHour.label === "Now" ? timeLabel : rainHour.label,
           probability: rainHour.rain,
-          temp: Math.round(hourly.temperature_2m?.[rainSource] ?? current.temperature_2m),
+          temp: rainHour.temp,
         }
       : null,
+    peakRain,
   };
+}
+
+function offlineView() {
+  return {
+    ...FALLBACK_WEATHER,
+    hours: FALLBACK_HOURS.map((hour) => ({ ...hour })),
+  };
+}
+
+function todayView(payload) {
+  const current = payload.current;
+  const hourly = payload.hourly;
+  const parts = zurichParts(new Date());
+  const hourKey = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:00`;
+  let index = hourly.time.findIndex((time) => time >= hourKey);
+  if (index < 0) index = Math.max(0, hourly.time.length - 7);
+  const slice = hourly.time.slice(index, index + 7);
+  if (!slice.length) return offlineView();
+
+  const described = describeCode(current.weather_code);
+  const hours = slice.map((time, offset) => {
+    const sourceIndex = index + offset;
+    const record = hourRecord(
+      time,
+      offset === 0 ? current.temperature_2m : hourly.temperature_2m?.[sourceIndex],
+      hourly.precipitation_probability?.[sourceIndex],
+      offset === 0 ? current.weather_code : hourly.weather_code?.[sourceIndex],
+      offset === 0 ? "Now" : time.slice(11, 16),
+    );
+    if (offset === 0) record.icon = described.icon;
+    return record;
+  });
+
+  return viewFromHours({
+    date: new Date(),
+    timeLabel: `${parts.hour}:${parts.minute}`,
+    temp: Math.round(current.temperature_2m),
+    condition: described.label,
+    icon: described.icon,
+    wind: Math.round(current.wind_speed_10m ?? 0),
+    feelsLike: null,
+    hours,
+    live: true,
+  });
+}
+
+function futureView(payload, dayOffset) {
+  const dayKey = zurichDayKey(dayOffset);
+  const hourly = payload.hourly;
+  const indexes = [];
+  hourly.time.forEach((time, index) => {
+    if (!time.startsWith(dayKey)) return;
+    const hour = Number(time.slice(11, 13));
+    if (hour >= 11 && hour <= 17) indexes.push(index);
+  });
+  if (!indexes.length) return offlineView();
+
+  const hours = indexes.map((index) => {
+    const time = hourly.time[index];
+    return hourRecord(
+      time,
+      hourly.temperature_2m?.[index],
+      hourly.precipitation_probability?.[index],
+      hourly.weather_code?.[index],
+      time.slice(11, 16),
+    );
+  });
+  const midday = hours.find((hour) => hour.label === "14:00") || hours[Math.floor(hours.length / 2)];
+  midday.current = true;
+  const [year, month, day] = dayKey.split("-").map(Number);
+
+  return viewFromHours({
+    date: new Date(Date.UTC(year, month - 1, day, 12)),
+    timeLabel: midday.label,
+    temp: midday.temp,
+    condition: midday.condition,
+    icon: midday.icon,
+    wind: null,
+    feelsLike: null,
+    hours,
+    live: true,
+  });
 }
 
 export async function fetchWeather() {
   try {
     const response = await fetch(FORECAST_URL);
-    if (!response.ok) return { ...FALLBACK_WEATHER, hours: FALLBACK_HOURS.map((hour) => ({ ...hour })) };
-    return parseForecast(await response.json());
+    if (!response.ok) return { live: false };
+    const data = await response.json();
+    if (!data?.current || !data?.hourly?.time?.length) return { live: false };
+    return { live: true, current: data.current, hourly: data.hourly };
   } catch {
-    return { ...FALLBACK_WEATHER, hours: FALLBACK_HOURS.map((hour) => ({ ...hour })) };
+    return { live: false };
   }
+}
+
+export function weatherForDay(payload, dayOffset) {
+  if (!payload?.live) return offlineView();
+  if (!dayOffset) return todayView(payload);
+  return futureView(payload, dayOffset);
+}
+
+export function scoreActivity(activity, weather) {
+  const rain = weather.peakRain ?? weather.rainWindow?.probability ?? 0;
+  let score;
+  if (rain >= 50) {
+    const span = Math.min(1, (rain - 50) / 50);
+    score = activity.setting === "indoor" ? 90 + span * 10 : 40 - span * 20;
+  } else if (rain < 30) {
+    const span = Math.min(1, rain / 30);
+    score = activity.setting === "outdoor" ? 100 - span * 10 : 50 + span * 20;
+  } else {
+    score = activity.setting === "indoor" ? 75 : 55;
+  }
+  const penalty = Math.floor((activity.distanceMeters || 0) / 200);
+  return Math.round(score - penalty);
 }
 
 export function whyItFits(activity, weather) {
   if (!weather.live) return activity.whyStatic;
-  const rain = weather.rainWindow;
-  if (rain) {
-    return `The forecast shows a ${rain.probability}% chance of rain from ${rain.from} at ${rain.temp} °C. ${activity.fitLive}`;
+  const rain = weather.peakRain ?? 0;
+  const rainWindow = weather.rainWindow;
+  const first = weather.hours?.[0];
+  const startsLater = Boolean(rainWindow && first && first.rain < 50 && rainWindow.from !== first.label);
+  const chance = rainWindow?.probability ?? rain;
+  const time = rainWindow?.from ?? weather.timeLabel;
+
+  if (activity.setting === "outdoor" && startsLater) {
+    return `Mostly dry until ${rainWindow.from} — great for a quick visit before rain starts.`;
   }
-  return `The forecast stays mostly dry this afternoon at ${weather.temp} °C. ${activity.fitLiveDry}`;
+  if (activity.setting === "outdoor" && rain < 30) {
+    return `Pleasant, dry conditions (${weather.temp}°C) — ideal for exploring outside.`;
+  }
+  if (activity.setting === "indoor" && rain >= 50) {
+    return `Forecast shows a ${chance}% chance of rain around ${time}. Great time to stay dry indoors.`;
+  }
+  if (activity.setting === "outdoor") {
+    return `Forecast shows a ${chance}% chance of rain around ${time}. A short outdoor visit may get wet.`;
+  }
+  return `Pleasant, dry conditions (${weather.temp}°C) — a calm indoor option if you would rather stay inside.`;
 }
 
 export function suggestionLine(activity, weather) {
