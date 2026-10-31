@@ -97,6 +97,7 @@ export function createMap(container, { places, activeId, hb, onSelect, onHover }
       ],
       { color: "#245b45", weight: 3, dashArray: "1 7", lineCap: "round" },
     ).addTo(map);
+    if (!place.routeLabel) return;
     routeMarker = L.marker([(hb.lat + place.lat) / 2, (hb.lon + place.lon) / 2], {
       icon: routeIcon(place.routeLabel),
       interactive: false,

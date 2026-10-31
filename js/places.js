@@ -1,4 +1,4 @@
-import { activities, ZURICH_HB } from "../data/activities.js";
+import { activities } from "../data/activities.js";
 
 const OVERPASS_URLS = [
   "https://overpass.openstreetmap.fr/api/interpreter",
@@ -33,20 +33,6 @@ const PHOTOS = {
     hero: "assets/images/schanzengraben.jpg",
   },
 };
-
-function toRadians(value) {
-  return (value * Math.PI) / 180;
-}
-
-export function distanceFromHb(lat, lon) {
-  const earth = 6371000;
-  const dLat = toRadians(lat - ZURICH_HB.lat);
-  const dLon = toRadians(lon - ZURICH_HB.lon);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(ZURICH_HB.lat)) * Math.cos(toRadians(lat)) * Math.sin(dLon / 2) ** 2;
-  return Math.round(earth * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
 
 function classify(tags) {
   if (tags.leisure === "park" || tags.leisure === "garden") {
@@ -83,8 +69,6 @@ export function normalizeOsmNode(node, index) {
   const tags = node.tags || {};
   const title = tags.name || tags["name:en"] || "Zürich Point of Interest";
   const kind = classify(tags);
-  const meters = distanceFromHb(node.lat, node.lon);
-  const walkingMin = Math.max(1, Math.round(meters / 80));
   const outdoor = kind.setting === "outdoor";
   const street = tags["addr:street"];
   const house = tags["addr:housenumber"] || "";
@@ -101,26 +85,24 @@ export function normalizeOsmNode(node, index) {
     category: kind.category,
     priceLabel,
     priceValue: outdoor ? 0 : null,
-    carFree: true,
-    transitIcon: "footprints",
-    transit: `${walkingMin} min walk`,
-    routeLabel: `${walkingMin} min`,
-    distanceMeters: meters,
+    transitIcon: "map-pin-sm",
+    transit: "Central Zürich",
+    routeLabel: "",
     weatherNote: outdoor
-      ? "Ranked from the forecast and the walk from Zürich HB."
+      ? "Ranked from the forecast."
       : "A nearby indoor option if the weather turns.",
     image: kind.photos.image,
     hero: kind.photos.hero,
     lat: node.lat,
     lon: node.lon,
     address,
-    duration: `About ${walkingMin} min on foot`,
+    duration: "A visit in central Zürich",
     whyStatic: outdoor
-      ? `${title} is about a ${walkingMin}-minute walk from Zürich HB. This demo has no live forecast, so check the sky before you go.`
-      : `${title} is indoors, about a ${walkingMin}-minute walk from Zürich HB. A straightforward backup when the afternoon turns wet.`,
+      ? `${title} is outdoors in central Zürich. This demo has no live forecast, so check the sky before you go.`
+      : `${title} is indoors in central Zürich. A straightforward backup when the afternoon turns wet.`,
     suggestion: "Our suggestion: check the forecast before you leave",
     headline: outdoor ? "A nearby outdoor stop." : "A nearby indoor stop.",
-    description: `${title} comes from OpenStreetMap, about ${meters} m from Zürich HB. Hours and admission are not checked live.`,
+    description: `${title} comes from OpenStreetMap. Hours and admission are not checked live.`,
     tips: [
       {
         title: "Weather first",
@@ -147,15 +129,15 @@ export function normalizeOsmNode(node, index) {
         note: "Opening hours are not verified live.",
       },
       {
-        icon: "footprints-lg",
-        label: "Climate-conscious travel",
-        value: `${walkingMin} min walk from Zürich HB`,
-        note: `About ${meters} m from the station. No extra public transport ticket in this guide.`,
+        icon: "map-pin-muted",
+        label: "Location",
+        value: address,
+        note: "Listed in OpenStreetMap.",
       },
     ],
     actionLabel: "Visit venue website",
     website: safeWebsite(tags.website || tags["contact:website"]),
-    mapCaption: `${title} · ${walkingMin} min from Zürich HB`,
+    mapCaption: title,
   };
 }
 
@@ -163,8 +145,6 @@ export function fallbackPlaces() {
   return activities.map((activity) => ({
     ...activity,
     placeKey: activity.placeKey || `static-${activity.id}`,
-    distanceMeters: distanceFromHb(activity.lat, activity.lon),
-    carFree: activity.carFree !== false,
   }));
 }
 

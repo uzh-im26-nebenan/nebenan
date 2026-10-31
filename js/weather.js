@@ -15,8 +15,8 @@ export const FALLBACK_WEATHER = {
   live: false,
   dateLabel: "ZÜRICH · SATURDAY, 17 OCTOBER 2026",
   badge: "Illustrative demo · no live data",
-  sourceLine: "Planned weather source: Open-Meteo",
-  detailSource: "Example data · planned source: Open-Meteo",
+  sourceLine: "Example weather, not a live forecast",
+  detailSource: "Example data",
   place: "Central Zürich",
   timeLabel: "11:00 · Demo",
   temp: 13,
@@ -245,8 +245,7 @@ export function scoreActivity(activity, weather) {
   } else {
     score = activity.setting === "indoor" ? 75 : 55;
   }
-  const penalty = Math.floor((activity.distanceMeters || 0) / 200);
-  return Math.round(score - penalty);
+  return Math.round(score);
 }
 
 export function whyItFits(activity, weather) {

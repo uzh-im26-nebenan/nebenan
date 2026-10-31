@@ -14,7 +14,7 @@ export const activities = [
     setting: "indoor",
     settingLabel: "Indoor",
     category: "Culture & history",
-    priceLabel: "CHF 10*",
+    priceLabel: "CHF 10",
     priceValue: 10,
     carFree: true,
     transitIcon: "footprints",

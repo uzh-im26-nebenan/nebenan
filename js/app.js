@@ -8,7 +8,6 @@ const ICONS = {
   "arrow-up-right": ["assets/icons/arrow-up-right.svg", 16, 16],
   "arrow-up-right-light": ["assets/icons/arrow-up-right-light.svg", 17, 17],
   bike: ["assets/icons/bike.svg", 14, 14],
-  "chevron-down": ["assets/icons/chevron-down.svg", 14, 14],
   clock: ["assets/icons/clock.svg", 21, 21],
   cloud: ["assets/icons/cloud.svg", 24, 24],
   "cloud-rain": ["assets/icons/cloud-rain.svg", 24, 24],
@@ -19,7 +18,6 @@ const ICONS = {
   "footprints-lg": ["assets/icons/footprints-lg.svg", 21, 21],
   house: ["assets/icons/house.svg", 16, 16],
   "layout-grid": ["assets/icons/layout-grid.svg", 16, 16],
-  leaf: ["assets/icons/leaf.svg", 15, 15],
   "map-pin-muted": ["assets/icons/map-pin-muted.svg", 15, 15],
   "map-pin-sm": ["assets/icons/map-pin-sm.svg", 14, 14],
   navigation: ["assets/icons/navigation.svg", 16, 16],
@@ -28,12 +26,6 @@ const ICONS = {
   tram: ["assets/icons/tram.svg", 14, 14],
   trees: ["assets/icons/trees.svg", 16, 16],
 };
-
-const BUDGETS = [
-  { id: "any", label: "All prices" },
-  { id: "free", label: "Free" },
-  { id: "15", label: "Up to CHF 15" },
-];
 
 const DAYS = [
   { id: 0, label: "Today" },
@@ -44,12 +36,9 @@ const DAYS = [
 const view = document.querySelector("#view");
 const state = {
   setting: "all",
-  budget: "any",
-  carFreeOnly: true,
   activeId: "01",
   activeKey: null,
   day: 0,
-  menuOpen: false,
 };
 
 let weather = { ...FALLBACK_WEATHER, hours: FALLBACK_WEATHER.hours.map((hour) => ({ ...hour })) };
@@ -73,23 +62,16 @@ function escapeHtml(value) {
   }[character]));
 }
 
-function passesShared(activity) {
-  if (state.carFreeOnly && !activity.carFree) return false;
-  if (state.budget === "free") return activity.priceValue === 0;
-  if (state.budget === "15") return typeof activity.priceValue === "number" && activity.priceValue <= 15;
-  return true;
-}
-
 function passesSetting(activity, setting) {
   return setting === "all" || activity.setting === setting;
 }
 
 function visibleActivities() {
-  return ranked.filter((activity) => passesShared(activity) && passesSetting(activity, state.setting));
+  return ranked.filter((activity) => passesSetting(activity, state.setting));
 }
 
 function countFor(setting) {
-  return ranked.filter((activity) => passesShared(activity) && passesSetting(activity, setting)).length;
+  return ranked.filter((activity) => passesSetting(activity, setting)).length;
 }
 
 function findPlace(key) {
@@ -103,13 +85,14 @@ function rankActivities(list, report) {
       score: scoreActivity(activity, report),
       weatherNote: whyItFits(activity, report),
     }))
-    .sort((a, b) => b.score - a.score || a.distanceMeters - b.distanceMeters)
+    .sort((a, b) => b.score - a.score)
     .map((activity, index) => {
       const id = String(index + 1).padStart(2, "0");
+      const route = activity.routeLabel ? ` · ${activity.routeLabel} from Zürich HB` : "";
       return {
         ...activity,
         id,
-        mapCaption: `${id} · ${activity.shortName} · ${activity.routeLabel} from Zürich HB`,
+        mapCaption: `${id} · ${activity.shortName}${route}`,
       };
     });
 }
@@ -182,30 +165,6 @@ function dayPills() {
       </button>
     `,
   ).join("");
-}
-
-function budgetMenu() {
-  const current = BUDGETS.find((item) => item.id === state.budget) ?? BUDGETS[2];
-  const options = BUDGETS.map(
-    (item) => `
-      <li>
-        <button type="button" data-budget="${item.id}" role="option" aria-selected="${item.id === state.budget}">
-          ${escapeHtml(item.label)}
-        </button>
-      </li>
-    `,
-  ).join("");
-  return `
-    <div class="price-menu">
-      <button type="button" class="price-button" data-action="toggle-budget" aria-expanded="${state.menuOpen}" aria-haspopup="listbox">
-        ${escapeHtml(current.label)}
-        ${icon("chevron-down")}
-      </button>
-      <ul class="price-list" role="listbox" ${state.menuOpen ? "" : "hidden"}>
-        ${options}
-      </ul>
-    </div>
-  `;
 }
 
 function activityCard(activity) {
@@ -309,12 +268,6 @@ function renderMain() {
               ${icon("trees", "icon-tint")}Outdoor · ${countFor("outdoor")}
             </button>
           </div>
-          <div class="filter-extra">
-            ${budgetMenu()}
-            <button type="button" class="car-chip" data-action="toggle-car" aria-pressed="${state.carFreeOnly}">
-              ${icon("leaf")}Reachable on foot/transit
-            </button>
-          </div>
         </div>
         <div class="results-head">
           <div>
@@ -333,7 +286,6 @@ function renderMain() {
             </div>
           </div>
         </div>
-        <p class="disclaimer">* CHF 10 is an example student price with student ID. Prices, opening hours and routes are estimates, not checked live. Public transport fares are not included.</p>
       </section>
     </div>
   `;
@@ -499,25 +451,7 @@ view.addEventListener("click", (event) => {
   const setting = event.target.closest("[data-setting]");
   if (setting) {
     state.setting = setting.dataset.setting;
-    state.menuOpen = false;
     render();
-    return;
-  }
-
-  const budget = event.target.closest("[data-budget]");
-  if (budget) {
-    state.budget = budget.dataset.budget;
-    state.menuOpen = false;
-    render();
-    return;
-  }
-
-  if (event.target.closest("[data-action='toggle-budget']")) {
-    state.menuOpen = !state.menuOpen;
-    const list = view.querySelector(".price-list");
-    const button = view.querySelector("[data-action='toggle-budget']");
-    if (list) list.hidden = !state.menuOpen;
-    if (button) button.setAttribute("aria-expanded", String(state.menuOpen));
     return;
   }
 
@@ -526,14 +460,6 @@ view.addEventListener("click", (event) => {
     state.day = Number(day.dataset.day);
     weather = weatherForDay(forecastPayload, state.day);
     applyRank();
-    state.menuOpen = false;
-    render();
-    return;
-  }
-
-  if (event.target.closest("[data-action='toggle-car']")) {
-    state.carFreeOnly = !state.carFreeOnly;
-    state.menuOpen = false;
     render();
   }
 });
@@ -548,17 +474,7 @@ view.addEventListener("focusin", (event) => {
   if (card) highlight(card.dataset.activity);
 });
 
-document.addEventListener("click", (event) => {
-  if (event.target.closest(".price-menu")) return;
-  state.menuOpen = false;
-  const list = view.querySelector(".price-list");
-  const button = view.querySelector("[data-action='toggle-budget']");
-  if (list) list.hidden = true;
-  if (button) button.setAttribute("aria-expanded", "false");
-});
-
 window.addEventListener("hashchange", () => {
-  state.menuOpen = false;
   render();
 });
 
